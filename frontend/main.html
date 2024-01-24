@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body{
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js" integrity="sha512-1QvjE7BtotQjkq8PxLeF6P46gEpBRXuskzIVgjFpekzFVF4yjRgrQvTG1MTOJ3yQgvTteKAcO7DSZI92+u/yZw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js" integrity="sha512-iKDtgDyTHjAitUDdLljGhenhPwrbBfqTKWO1mkhSFH3A7blITC9MhYon6SjnMhp4o0rADGw9yAC6EW4t5a4K3g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <div>
+        <textarea style="min-width: 700px; min-height: 500px;">
+        </textarea>
+    </div>
+    <input placeholder="메시지를 입력하세요">
+    <button>전송</button>
+    <script>
+        
+        var socket = new SockJS('http://192.168.100.146:8080/ws-stomp')
+        var stompClient = Stomp.over(socket)
+
+        var chattingWindow = document.querySelector('textarea')
+
+        stompClient.connect({}, onConnected, onError);
+
+        // socket.onopen = (event) =>{
+        //     console.log('소켓 연결이 연렸습니다.')
+        //     socket.send('하위')
+        // }
+
+        function onConnected(){
+            stompClient.subscribe('/sub/chat/room/' + '59fbea12-0e3f-45a7-aa9d-05251e1e92a2', onMessageReceived);
+            stompClient.send("/pub/chat/enterUser", {}, JSON.stringify({"roomId": "59fbea12-0e3f-45a7-aa9d-05251e1e92a2", sender: "kim", type: 'ENTER'}))
+        }
+
+        function onError(error) {
+            alert('error')
+        }
+
+
+        // 메시지를 받을 때도 마찬가지로 JSON 타입으로 받으며,
+        // 넘어온 JSON 형식의 메시지를 parse 해서 사용한다.
+        function onMessageReceived(payload) {
+            //console.log("payload 들어오냐? :"+payload);
+            var chat = JSON.parse(payload.body);
+            console.log("전송받은 데이터: ", chat.message)
+            var value = chattingWindow.value + '\n' + chat.message
+            chattingWindow.value = value;
+        }
+
+        function sendMessage(event){
+            var input = document.querySelector('input')
+            var messageContent = input.value.trim();
+            stompClient.send("/pub/chat/sendMessage", {}, JSON.stringify({
+                "roomId": '59fbea12-0e3f-45a7-aa9d-05251e1e92a2',
+                sender: 'kim',
+                message: messageContent,
+                type: 'TALK'
+            }))
+            input.value = '';
+        }
+
+        document.querySelector('button').addEventListener('click', ()=>{
+            sendMessage();
+        })
+    </script>
+</body>
+</html>
