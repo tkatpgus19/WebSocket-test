@@ -36,3 +36,30 @@
     transform: rotate(360deg);
   }
 }
+
+table{
+  margin: auto;
+  width: 60%;
+  border-collapse: collapse;
+  border: 1px solid white
+}
+td, th{
+  border: 1px solid white;
+}
+.move{
+  background-color: wheat;
+  width: 100%;
+  color: black;
+  cursor: pointer;
+  transition: 0.5s all;
+}
+.move:hover{
+  background-color: rgb(168, 151, 120);
+  color: white;
+  transition: 0.5s all;
+}
+
+textarea{
+  width: 500px;
+  height: 500px;
+}

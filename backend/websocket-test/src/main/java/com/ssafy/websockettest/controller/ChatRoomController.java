@@ -16,6 +16,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequiredArgsConstructor
 @Slf4j
 @RestController
+@CrossOrigin("*")
 public class ChatRoomController {
 
     // chatRoomRepository Bean 가져오기

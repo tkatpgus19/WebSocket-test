@@ -29,7 +29,7 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	implementation 'org.webjars:stomp-websocket:2.3.4'
 	// https://mvnrepository.com/artifact/org.webjars/sockjs-client
-	implementation 'org.webjars:sockjs-client:1.5.1'
+//	implementation 'org.webjars:sockjs-client:1.5.1'
 
 
 }
