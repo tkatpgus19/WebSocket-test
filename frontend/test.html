@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+</head>
+<body>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js" integrity="sha512-1QvjE7BtotQjkq8PxLeF6P46gEpBRXuskzIVgjFpekzFVF4yjRgrQvTG1MTOJ3yQgvTteKAcO7DSZI92+u/yZw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js" integrity="sha512-iKDtgDyTHjAitUDdLljGhenhPwrbBfqTKWO1mkhSFH3A7blITC9MhYon6SjnMhp4o0rADGw9yAC6EW4t5a4K3g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+
+	<div id="main"></div>
+	<script>
+		const p = document.querySelector('p')
+
+		var main = document.querySelector('#main')
+		var rooms = [];
+		fetch('http://localhost:8080')
+		.then(res=> res.json())
+		.then(data=> {
+			console.log(data)
+			for(let i=0; i<data.length; i++){
+				var tmp = main.innerHTML
+				main.innerHTML = tmp + ` <div>${data[0].roomName}</div>`
+			}
+		})
+	</script>
+</body>
+</html>

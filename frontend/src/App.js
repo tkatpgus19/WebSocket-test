@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import './App.css';
 import axios from 'axios';
 import SockJS from 'sockjs-client'
@@ -9,8 +9,12 @@ function App() {
   const [isVoid, setIsVoid] = useState(true);
   const [roomName, setRoomName] = useState('');
   const [message, setMessage] = useState('');
-  const [stompClient, setStompClient] = useState(null)
-  // var stompClient;
+  const [roomId, setRoomId] = useState('');
+
+  const [username, setUsername] = useState('');
+
+  const client = useRef();
+
   const getRoomList = ()=>{
     axios.get('http://localhost:8080')
       .then(res=>{
@@ -47,15 +51,14 @@ function App() {
   }
 
   const connectChat = ()=>{
-    const socket = new SockJS('http://192.168.100.146:8080/ws-stomp')
-    setStompClient(Stomp.over(socket))
-    stompClient.connect({}, onConnected, onError); 
+    const socket = new SockJS('http://localhost:8080/ws-stomp')
+    client.current = Stomp.over(socket)
+    client.current.connect({}, onConnected, onError); 
   }
         
   function onConnected(){
-      stompClient.subscribe('/sub/chat/room/' + '59fbea12-0e3f-45a7-aa9d-05251e1e92a2', onMessageReceived);
-      stompClient.send("/pub/chat/enterUser", {}, JSON.stringify({"roomId": "59fbea12-0e3f-45a7-aa9d-05251e1e92a2", sender: "kim", type: 'ENTER'}))
-      setStompClient(stompClient)
+      client.current.subscribe('/sub/chat/room/' + roomId, onMessageReceived);
+      client.current.send("/pub/chat/enterUser", {}, JSON.stringify({"roomId": roomId, sender: "kim", type: 'ENTER'}))
     }
 
   function onError(error) {
@@ -73,13 +76,17 @@ function App() {
   }
 
   function sendMessage(){
-      stompClient.send("/pub/chat/sendMessage", {}, JSON.stringify({
-          "roomId": '59fbea12-0e3f-45a7-aa9d-05251e1e92a2',
+      client.current.send("/pub/chat/sendMessage", {}, JSON.stringify({
+          "roomId": roomId,
           sender: 'kim',
           message: message,
           type: 'TALK'
       }))
       setMessage('')
+  }
+
+  function onClick2(){
+
   }
 
   return (
@@ -103,7 +110,7 @@ function App() {
                   <tr key={index}>
                     <td>{index}</td>
                     <td>{data.roomName}</td>
-                    <td><button className='move' onClick={connectChat}>이동하기</button></td>
+                    <td><button className='move' onClick={()=>{setRoomId(data.roomId); connectChat();}}>이동하기</button></td>
                   </tr>
                 </>
               )
@@ -118,8 +125,11 @@ function App() {
       <input placeholder='방 이름' onChange={onChange} onKeyDown={onKeyDown} data={roomName}/>
       <button onClick={makeRoom} >방 만들기</button>
 
+      <input placeholder='유저 이름'/>
+      <button onClick={onClick2}>적용</button>
+
 <div></div>
-      <textarea className='chat' disabled></textarea>
+      <textarea className='chat' ></textarea>
       <input onChange={onChange2}/>
       <button onClick={sendMessage}>메시지 전송</button>
     </div>
