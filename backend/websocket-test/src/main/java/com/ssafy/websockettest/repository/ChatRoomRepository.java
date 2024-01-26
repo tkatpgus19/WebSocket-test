@@ -2,11 +2,13 @@ package com.ssafy.websockettest.repository;
 
 import com.ssafy.websockettest.model.ChatRoom;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
 @Repository
+@Slf4j
 public class ChatRoomRepository {
     private Map<String, ChatRoom> chatRoomMap;
 
@@ -27,6 +29,7 @@ public class ChatRoomRepository {
     }
 
     public ChatRoom createChatRoom(String roomName) {
+        
         ChatRoom chatRoom = ChatRoom.create(roomName);
         chatRoomMap.put(chatRoom.getRoomId(), chatRoom);
         return chatRoom;
@@ -43,6 +46,7 @@ public class ChatRoomRepository {
     }
 
     public String addUser(String roomId, String userName){
+
         ChatRoom room = chatRoomMap.get(roomId);
         String userUUID = UUID.randomUUID().toString();
 

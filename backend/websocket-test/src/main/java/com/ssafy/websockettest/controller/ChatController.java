@@ -33,7 +33,6 @@ public class ChatController {
     // 처리가 완료되면 /sub/chat/room/roomId 로 메시지가 전송된다.
     @MessageMapping("/chat/enterUser")
     public void enterUser(@Payload ChatDto chat, SimpMessageHeaderAccessor headerAccessor) {
-
         // 채팅방 유저+1
         repository.plusUserCnt(chat.getRoomId());
 
