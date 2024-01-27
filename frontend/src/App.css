@@ -59,7 +59,10 @@ td, th{
   transition: 0.5s all;
 }
 
-textarea{
+.chat{
   width: 500px;
   height: 500px;
+}
+.userlist{
+  
 }

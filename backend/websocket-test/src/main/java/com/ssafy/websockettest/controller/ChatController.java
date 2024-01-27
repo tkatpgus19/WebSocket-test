@@ -6,16 +6,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import java.util.ArrayList;
@@ -23,6 +22,7 @@ import java.util.ArrayList;
 @RequiredArgsConstructor
 @Controller
 @Slf4j
+@CrossOrigin("*")
 public class ChatController {
     private final SimpMessageSendingOperations template;
 
@@ -92,11 +92,10 @@ public class ChatController {
     }
 
     // 채팅에 참여한 유저 리스트 반환
-    @GetMapping("/chat/userlist")
-    @ResponseBody
-    public ArrayList<String> userList(String roomId) {
-
-        return repository.getUserList(roomId);
+    @GetMapping("/chat/userlist/{roomId}")
+    public ResponseEntity<?> userList(@PathVariable("roomId") String roomId) {
+        log.warn("룸정보: "+roomId);
+        return new ResponseEntity<>(repository.getUserList(roomId), HttpStatus.OK);
     }
 
     // 채팅에 참여한 유저 닉네임 중복 확인

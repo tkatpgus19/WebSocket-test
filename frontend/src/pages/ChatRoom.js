@@ -11,7 +11,8 @@ function ChatRoom(){
 	let location = useLocation()
 	const {roomId, nickname} = location.state
   const [message, setMessage] = useState('');
-	console.log('닉네임: '+nickname)
+	const [userlist, setUserlist] = useState([]);
+	
 	
   // stomp 세션 연결 유지를 위한 변수
   const client = useRef();
@@ -48,6 +49,7 @@ function ChatRoom(){
       console.log("전송받은 데이터: ", chat)
       var value = `${chattingWindow.value}\n[${chat.sender}]\n${chat.message}`
       chattingWindow.value = value;
+			showMembers()
   }
 
   function sendMessage(){
@@ -62,9 +64,10 @@ function ChatRoom(){
 
 	function showMembers(){
 		console.log(roomId)
-		axios.get('http://localhost:8080/chat/userlist', {'roomId': roomId})
+		axios.get(`http://localhost:8080/chat/userlist/${roomId}`)
       .then(res=>{
-        console.log(res)
+        console.log(res.data)
+				setUserlist(res.data)
       })
       .catch(err=>console.log(err))
 	}
@@ -72,11 +75,14 @@ function ChatRoom(){
 	return(
 		<>
 			<div>
-				<textarea className='chat' ></textarea>
+				<textarea className='chat'></textarea>
+				<textarea className='userlist' value={userlist}></textarea>
 			</div>
 			<input onChange={onMessageChange} onKeyDown={onKeyDown} value={message}/>
 			<button onClick={sendMessage}>메시지 전송</button>
-			<button onClick={showMembers}>이 방의 맴버 정보 보기</button>
+			<button onClick={()=>{
+				client.current.disconnect();
+			}}>방 나가기</button>
 		</>
 	);
 };
