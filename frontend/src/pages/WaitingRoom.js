@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 function WaitingRoom(){
-
+  useEffect(()=>{
+    getRoomList();
+  }, [])
   // 채팅방 목록
   // 받아온 채팅방 목록이 비어있는지 체크하는 플래그
   // 방 이름
@@ -11,7 +13,7 @@ function WaitingRoom(){
   const [roomList, setRoomList] = useState([]);
   const [isVoid, setIsVoid] = useState(true);
   const [roomName, setRoomName] = useState('');
-  const [nickname, setNickname] = useState('');
+  const [nickname, setNickname] = useState('닉네임1');
 
 
   // 
@@ -35,13 +37,22 @@ function WaitingRoom(){
     setRoomName(e.target.value)
   }
 
+  const onNicknameChange = (e)=>{
+    setNickname(e.target.value)
+  }
+
   const makeRoom = ()=>{
-    axios.post(`http://localhost:8080/chat/createroom?name=${roomName}`)
-      .then(res=>{
-        getRoomList()
-        setRoomName('')
-        console.log('방이름: ' + roomName)
+    if(roomName === ''){
+      alert('방 이름을 입력하세요!')
+    }
+    else{
+      axios.post(`http://localhost:8080/chat/createroom?name=${roomName}`)
+        .then(res=>{
+          getRoomList()
+          setRoomName('')
+          console.log('방이름: ' + roomName)
       })
+    }
   }
   const onKeyDown = (e)=>{
     if(e.keyCode === 13){
@@ -76,7 +87,7 @@ function WaitingRoom(){
                 <td>
                   <button className='move' 
                   onClick={()=>{
-                    navigate("/chat", {state:data.roomId})
+                    navigate("/chat", {state: {roomId:data.roomId, nickname: nickname}})
                     }}>
                     이동하기
                   </button>
@@ -93,12 +104,11 @@ function WaitingRoom(){
       </div>
       
       <div>
-        <input placeholder='방 이름' onChange={onRoomNameChange} onKeyDown={onKeyDown} data={roomName}/>
+        <input placeholder='방 이름' onChange={onRoomNameChange} onKeyDown={onKeyDown} value={roomName}/>
         <button onClick={makeRoom} >방 만들기</button>
       </div>
       
-      <input placeholder='유저 이름'/>
-      <button>적용</button>
+      <input onChange={onNicknameChange} placeholder='유저 이름'/>
     </>
   );
 };

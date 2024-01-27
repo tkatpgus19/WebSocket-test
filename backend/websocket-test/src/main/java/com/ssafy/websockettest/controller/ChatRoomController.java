@@ -33,7 +33,7 @@ public class ChatRoomController {
     // 채팅방 생성
     // 채팅방 생성 후 다시 / 로 return
     @PostMapping("/chat/createroom")
-    public ResponseEntity<?> createRoom(@RequestParam String name) {
+    public ResponseEntity<?> createRoom(@RequestParam("name") String name) {
         ChatRoom room = chatRoomRepository.createChatRoom(name);
         log.info("CREATE Chat Room {}", room);
         return new ResponseEntity<>("roomName" + room, HttpStatus.OK);
@@ -43,7 +43,7 @@ public class ChatRoomController {
     // 파라미터로 넘어오는 roomId 를 확인후 해당 roomId 를 기준으로
     // 채팅방을 찾아서 클라이언트를 chatroom 으로 보낸다.
     @GetMapping("/chat/room/{roomId}")
-    public ResponseEntity<?> roomDetail(@PathVariable  String roomId) {
+    public ResponseEntity<?> roomDetail(@PathVariable String roomId) {
 
         log.info("roomId {}", roomId);
         return new ResponseEntity<>(chatRoomRepository.findRoomById(roomId), HttpStatus.OK);

@@ -4,9 +4,6 @@ import WaitingRoom from './pages/WaitingRoom';
 import ChatRoom from './pages/ChatRoom';
 
 function App() {
-  
-  
-
   return (
     <div className="App">
       <Routes>
