@@ -33,8 +33,8 @@ public class ChatRoomController {
     // 채팅방 생성
     // 채팅방 생성 후 다시 / 로 return
     @PostMapping("/chat/createroom")
-    public ResponseEntity<?> createRoom(@RequestParam("name") String name, @RequestParam("roomPwd") String roomPwd, @RequestParam("secretChk") boolean secretChk) {
-        ChatRoom room = chatRoomRepository.createChatRoom(name, roomPwd, secretChk);
+    public ResponseEntity<?> createRoom(@RequestParam("name") String name, @RequestParam("maxUserCnt") int maxUserCnt, @RequestParam("roomPwd") String roomPwd, @RequestParam("secretChk") boolean secretChk) {
+        ChatRoom room = chatRoomRepository.createChatRoom(name, maxUserCnt, roomPwd, secretChk);
         log.info("CREATE Chat Room {}", room);
         return new ResponseEntity<>("roomName" + room, HttpStatus.OK);
     }

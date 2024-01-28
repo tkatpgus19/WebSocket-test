@@ -16,8 +16,9 @@ function WaitingRoom(){
   const [nickname, setNickname] = useState('닉네임1');
   const [secretChk, setSecretChk] = useState(false);
   const [roomPwd, setRoomPwd] = useState('');
+  const [maxUserCnt, setMaxUserCnt] = useState(2);
 
-
+ 
   // 
 
   const navigate = useNavigate();
@@ -48,7 +49,8 @@ function WaitingRoom(){
       alert('방 이름을 입력하세요!')
     }
     else{
-      axios.post(`http://localhost:8080/chat/createroom?name=${roomName}&roomPwd=${roomPwd}&secretChk=${secretChk}`)
+      console.log(maxUserCnt)
+      axios.post(`http://localhost:8080/chat/createroom?name=${roomName}&maxUserCnt=${maxUserCnt}&roomPwd=${roomPwd}&secretChk=${secretChk}`)
         .then(res=>{
           getRoomList()
           setRoomName('')
@@ -65,6 +67,9 @@ function WaitingRoom(){
   const onRoomPwdChange = (e)=>{
     setRoomPwd(e.target.value)
   }
+  const onMaxUserCntChange = (e)=>{
+    setMaxUserCnt(e.target.value)
+  }
   
   return(
     <>
@@ -78,12 +83,13 @@ function WaitingRoom(){
             <th>채팅방 번호</th>
             <th>채팅방 이름</th>
             <th>비밀방 여부</th>
+            <th>현재 인원</th>
             <th>입장하기</th>
           </tr>
         </thead>
         <tbody>
           {
-            isVoid ? <tr><td colSpan={'3'}>채팅방이 존재하지 않습니다.</td></tr> : null
+            isVoid ? <tr><td colSpan={'5'}>채팅방이 존재하지 않습니다.</td></tr> : null
           }
           {
             roomList.map((data, index)=>{
@@ -93,16 +99,41 @@ function WaitingRoom(){
                 <td>{index}</td>
                 <td>{data.roomName}</td>
                 <td>{data.secretChk ? 'Y' : 'N'}</td>
+                <td>{data.userCount+'/'+data.maxUserCnt}</td>
                 <td>
                   <button className='move' 
                   onClick={()=>{
                     if(data.secretChk){                      
                       const passwd = prompt("비밀번호")
                       axios.post(`http://localhost:8080/chat/checkPwd?roomId=${data.roomId}&roomPwd=${passwd}`)
-                        .then(res=>{res.data ? navigate("/chat", {state: {roomId:data.roomId, nickname: nickname}}) : alert('비밀번호가 다름')})
+                        .then(res=>{
+                          if(res.data){
+                            axios.get(`http://localhost:8080/chat/room/${data.roomId}`)
+                              .then(res=>{
+                                if(res.data.maxUserCnt > res.data.userCount){
+                                  navigate("/chat", {state: {roomId:data.roomId, nickname: nickname}})
+                                }
+                                else{
+                                  alert('인원이 가득 찼습니다.')
+                                }
+                                console.log(res)
+                              })
+                           }
+                          else{
+                            alert('비밀번호가 다름')
+                          }})
                     }
                     else{
-                      navigate("/chat", {state: {roomId:data.roomId, nickname: nickname}})
+                      axios.get(`http://localhost:8080/chat/room/${data.roomId}`)
+                              .then(res=>{
+                                if(res.data.maxUserCnt > res.data.userCount){
+                                  navigate("/chat", {state: {roomId:data.roomId, nickname: nickname}})
+                                }
+                                else{
+                                  alert('인원이 가득 찼습니다.')
+                                }
+                                console.log(res)
+                              })
                     }
                     }}>
                     이동하기
@@ -127,6 +158,8 @@ function WaitingRoom(){
         {
           secretChk ? <><p>비밀번호</p><input placeholder='비밀번호' onChange={onRoomPwdChange} value={roomPwd}/></> : null
         }<br/>
+        <p>인원 제한</p>
+        <input type='number' placeholder='1명' onChange={onMaxUserCntChange} value={maxUserCnt} min={2} max={6}/><br/>
         <button onClick={()=>{makeRoom(); setRoomPwd(''); setSecretChk(false)}} >방 만들기</button>
       </div>
     </>

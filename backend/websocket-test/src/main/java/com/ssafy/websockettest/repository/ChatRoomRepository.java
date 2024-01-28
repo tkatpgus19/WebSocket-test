@@ -28,8 +28,8 @@ public class ChatRoomRepository {
         return chatRoomMap.get(roomId);
     }
 
-    public ChatRoom createChatRoom(String roomName, String roomPwd, boolean secretChk) {
-        ChatRoom chatRoom = ChatRoom.create(roomName, roomPwd, secretChk);
+    public ChatRoom createChatRoom(String roomName, int maxUserCnt, String roomPwd, boolean secretChk) {
+        ChatRoom chatRoom = ChatRoom.create(roomName, maxUserCnt, roomPwd, secretChk);
         chatRoomMap.put(chatRoom.getRoomId(), chatRoom);
         log.warn("챗 룸 맵은 다음과 같다: "+chatRoomMap);
         return chatRoom;
