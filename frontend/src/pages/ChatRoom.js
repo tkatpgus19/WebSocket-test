@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import SockJS from 'sockjs-client'
 import { Stomp } from '@stomp/stompjs';
 import axios from 'axios';
@@ -9,6 +9,7 @@ function ChatRoom(){
 		connectChat();
 	}, [])
 	let location = useLocation()
+	const navigate = useNavigate();
 	const {roomId, nickname} = location.state
   const [message, setMessage] = useState('');
 	const [userlist, setUserlist] = useState([]);
@@ -82,6 +83,7 @@ function ChatRoom(){
 			<button onClick={sendMessage}>메시지 전송</button>
 			<button onClick={()=>{
 				client.current.disconnect();
+				navigate(-1)
 			}}>방 나가기</button>
 		</>
 	);
