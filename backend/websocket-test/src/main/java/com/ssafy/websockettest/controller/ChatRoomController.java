@@ -33,8 +33,8 @@ public class ChatRoomController {
     // 채팅방 생성
     // 채팅방 생성 후 다시 / 로 return
     @PostMapping("/chat/createroom")
-    public ResponseEntity<?> createRoom(@RequestParam("name") String name) {
-        ChatRoom room = chatRoomRepository.createChatRoom(name);
+    public ResponseEntity<?> createRoom(@RequestParam("name") String name, @RequestParam("roomPwd") String roomPwd, @RequestParam("secretChk") boolean secretChk) {
+        ChatRoom room = chatRoomRepository.createChatRoom(name, roomPwd, secretChk);
         log.info("CREATE Chat Room {}", room);
         return new ResponseEntity<>("roomName" + room, HttpStatus.OK);
     }
@@ -47,5 +47,12 @@ public class ChatRoomController {
 
         log.info("roomId {}", roomId);
         return new ResponseEntity<>(chatRoomRepository.findRoomById(roomId), HttpStatus.OK);
+    }
+
+    // 채팅방 비밀번호 비교
+    // 넘어오는 roomPwd 를 비교하고 일치하는지 체크 후 boolean 값을 반환한다.
+    @PostMapping("/chat/checkPwd")
+    public ResponseEntity<?> confirmPwd(@RequestParam("roomId") String roomId, @RequestParam("roomPwd") String roomPwd){
+        return new ResponseEntity<>(chatRoomRepository.confirmPwd(roomId, roomPwd), HttpStatus.OK);
     }
 }

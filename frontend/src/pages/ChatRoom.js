@@ -6,7 +6,9 @@ import axios from 'axios';
 
 function ChatRoom(){
 	useEffect(()=>{
+		console.log(roomId)
 		connectChat();
+		
 	}, [])
 	let location = useLocation()
 	const navigate = useNavigate();

@@ -14,6 +14,8 @@ function WaitingRoom(){
   const [isVoid, setIsVoid] = useState(true);
   const [roomName, setRoomName] = useState('');
   const [nickname, setNickname] = useState('닉네임1');
+  const [secretChk, setSecretChk] = useState(false);
+  const [roomPwd, setRoomPwd] = useState('');
 
 
   // 
@@ -46,7 +48,7 @@ function WaitingRoom(){
       alert('방 이름을 입력하세요!')
     }
     else{
-      axios.post(`http://localhost:8080/chat/createroom?name=${roomName}`)
+      axios.post(`http://localhost:8080/chat/createroom?name=${roomName}&roomPwd=${roomPwd}&secretChk=${secretChk}`)
         .then(res=>{
           getRoomList()
           setRoomName('')
@@ -60,16 +62,22 @@ function WaitingRoom(){
       setRoomName('')
     }
   }
+  const onRoomPwdChange = (e)=>{
+    setRoomPwd(e.target.value)
+  }
   
   return(
     <>
       <h1>채팅 앱</h1>
       <h3>현재 닉네임: {nickname}</h3>
-      <table>
+      
+      <input onChange={onNicknameChange} placeholder='유저 이름'/>
+      <table style={{marginTop: '20px', marginBottom: '20px'}}>
         <thead>
           <tr>
             <th>채팅방 번호</th>
             <th>채팅방 이름</th>
+            <th>비밀방 여부</th>
             <th>입장하기</th>
           </tr>
         </thead>
@@ -84,10 +92,18 @@ function WaitingRoom(){
               <tr key={index}>
                 <td>{index}</td>
                 <td>{data.roomName}</td>
+                <td>{data.secretChk ? 'Y' : 'N'}</td>
                 <td>
                   <button className='move' 
                   onClick={()=>{
-                    navigate("/chat", {state: {roomId:data.roomId, nickname: nickname}})
+                    if(data.secretChk){                      
+                      const passwd = prompt("비밀번호")
+                      axios.post(`http://localhost:8080/chat/checkPwd?roomId=${data.roomId}&roomPwd=${passwd}`)
+                        .then(res=>{res.data ? navigate("/chat", {state: {roomId:data.roomId, nickname: nickname}}) : alert('비밀번호가 다름')})
+                    }
+                    else{
+                      navigate("/chat", {state: {roomId:data.roomId, nickname: nickname}})
+                    }
                     }}>
                     이동하기
                   </button>
@@ -103,12 +119,16 @@ function WaitingRoom(){
         <button onClick={getRoomList}>방목록 불러오기</button>
       </div>
       
-      <div>
-        <input placeholder='방 이름' onChange={onRoomNameChange} onKeyDown={onKeyDown} value={roomName}/>
-        <button onClick={makeRoom} >방 만들기</button>
+      <div style={{border: '1px solid wheat', width: '50%', margin:'50px auto'}}>
+        <p>방 이름</p>
+        <input placeholder='방 이름' onChange={onRoomNameChange} onKeyDown={onKeyDown} value={roomName}/><br/>
+        <p>비밀방 여부</p>
+        <input type='checkbox' onChange={()=>{setSecretChk(!secretChk);}} value={secretChk}/><br/>
+        {
+          secretChk ? <><p>비밀번호</p><input placeholder='비밀번호' onChange={onRoomPwdChange} value={roomPwd}/></> : null
+        }<br/>
+        <button onClick={()=>{makeRoom(); setRoomPwd(''); setSecretChk(false)}} >방 만들기</button>
       </div>
-      
-      <input onChange={onNicknameChange} placeholder='유저 이름'/>
     </>
   );
 };
