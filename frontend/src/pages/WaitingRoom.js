@@ -73,9 +73,6 @@ function WaitingRoom(){
   
   return(
     <>
-      <h1>채팅 앱</h1>
-      <h3>현재 닉네임: {nickname}</h3>
-      
       <input onChange={onNicknameChange} placeholder='유저 이름'/>
       <table style={{marginTop: '20px', marginBottom: '20px'}}>
         <thead>
@@ -161,7 +158,8 @@ function WaitingRoom(){
         <p>인원 제한</p>
         <input type='number' placeholder='1명' onChange={onMaxUserCntChange} value={maxUserCnt} min={2} max={6}/><br/>
         <button onClick={()=>{makeRoom(); setRoomPwd(''); setSecretChk(false)}} >방 만들기</button>
-      </div>
+        </div>
+      
     </>
   );
 };

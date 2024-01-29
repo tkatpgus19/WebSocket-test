@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import SockJS from 'sockjs-client'
 import { Stomp } from '@stomp/stompjs';
 import axios from 'axios';
+import style from '../styles/WaitingRoom.module.css'
 
 function ChatRoom(){
 	useEffect(()=>{
@@ -66,27 +67,58 @@ function ChatRoom(){
   }
 
 	function showMembers(){
-		console.log(roomId)
+		console.log('쇼우맴버 호출됐지롱ㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇ'+roomId)
 		axios.get(`http://localhost:8080/chat/userlist/${roomId}`)
       .then(res=>{
         console.log(res.data)
-				setUserlist(res.data)
+				setUserlist(res.data.reverse())
       })
       .catch(err=>console.log(err))
 	}
 
 	return(
 		<>
-			<div>
-				<textarea className='chat'></textarea>
-				<textarea className='userlist' value={userlist}></textarea>
-			</div>
-			<input onChange={onMessageChange} onKeyDown={onKeyDown} value={message}/>
-			<button onClick={sendMessage}>메시지 전송</button>
-			<button onClick={()=>{
-				client.current.disconnect();
-				navigate(-1)
-			}}>방 나가기</button>
+        <div className={style.chatting_container}>
+          <div className={style.chatting_title + ' ' + style.chatting_common_box}>
+            <h3>1. 채팅 앱</h3>
+          </div>
+          <div className={style.chatting_nickname + ' ' + style.chatting_common_box}>
+            <h3>현재 닉네임: {nickname}</h3>
+          </div>
+          <div className={style.chatting_common_box + ' ' + style.chatting_btn_exit} onClick={()=>{
+          client.current.disconnect();
+          navigate(-1)
+        }}>나가기</div>
+          <div className={style.clear}>
+        </div>
+        <div className={style.chatting_room_container}>
+          <div className={style.chatting_room_left}>
+            <div style={{display:'grid', marginBottom:'0px', gridTemplateColumns: '1fr 1fr 1fr'}}>
+              {
+                [1, 2, 3, 4, 5, 6].map((data, index)=>(
+                  <>
+                  <div className={style.chatting_room_profile}>
+                    <div className={style.chatting_profile_img}>.</div>
+                    <div className={style.chatting_profile_info}>
+                      <h3 className={style.profile_info_nickname}>{userlist[index]}</h3>
+                      <h3 className={style.profile_info_roll}>MASTER</h3>
+                    </div>
+                  </div>
+                  </>
+                ))
+              }
+            </div>
+          </div>
+          <div className={style.chatting_room_right}>
+            
+            <textarea className={style.chatting_chat_container + ' chat'} disabled='true'></textarea>
+            <div className={style.chatting_chat_box}>
+              <input className={style.chatting_chat_input} onChange={onMessageChange} onKeyDown={onKeyDown} value={message}/>
+              <div className={style.chatting_chat_btn} onClick={sendMessage}>보내기</div>
+            </div>
+          </div>
+          </div>
+        </div>
 		</>
 	);
 };

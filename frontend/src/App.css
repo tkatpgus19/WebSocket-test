@@ -41,10 +41,10 @@ table{
   margin: auto;
   width: 60%;
   border-collapse: collapse;
-  border: 1px solid white
+  border: 1px solid black
 }
 td, th{
-  border: 1px solid white;
+  border: 1px solid black;
 }
 .move{
   background-color: wheat;
@@ -55,11 +55,15 @@ td, th{
 }
 .move:hover{
   background-color: rgb(168, 151, 120);
-  color: white;
+  color: black;
   transition: 0.5s all;
 }
 
 .chat{
   width: 500px;
   height: 500px;
+}
+
+body{
+  background: url(../public/imgs/background.png);
 }
