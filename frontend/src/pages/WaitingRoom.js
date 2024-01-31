@@ -100,38 +100,39 @@ function WaitingRoom(){
                 <td>
                   <button className='move' 
                   onClick={()=>{
-                    if(data.secretChk){                      
-                      const passwd = prompt("비밀번호")
-                      axios.post(`http://localhost:8080/chat/checkPwd?roomId=${data.roomId}&roomPwd=${passwd}`)
-                        .then(res=>{
-                          if(res.data){
-                            axios.get(`http://localhost:8080/chat/room/${data.roomId}`)
-                              .then(res=>{
-                                if(res.data.maxUserCnt > res.data.userCount){
-                                  navigate("/chat", {state: {roomId:data.roomId, nickname: nickname}})
-                                }
-                                else{
-                                  alert('인원이 가득 찼습니다.')
-                                }
-                                console.log(res)
-                              })
-                           }
-                          else{
-                            alert('비밀번호가 다름')
-                          }})
-                    }
-                    else{
-                      axios.get(`http://localhost:8080/chat/room/${data.roomId}`)
-                              .then(res=>{
-                                if(res.data.maxUserCnt > res.data.userCount){
-                                  navigate("/chat", {state: {roomId:data.roomId, nickname: nickname}})
-                                }
-                                else{
-                                  alert('인원이 가득 찼습니다.')
-                                }
-                                console.log(res)
-                              })
-                    }
+                    // if(data.secretChk){                      
+                    //   const passwd = prompt("비밀번호")
+                    //   axios.post(`http://localhost:8080/chat/checkPwd?roomId=${data.roomId}&roomPwd=${passwd}`)
+                    //     .then(res=>{
+                    //       if(res.data){
+                    //         axios.get(`http://localhost:8080/chat/room/${data.roomId}`)
+                    //           .then(res=>{
+                    //             if(res.data.maxUserCnt > res.data.userCount){
+                    //               navigate("/chat", {state: {roomId:data.roomId, nickname: nickname}})
+                    //             }
+                    //             else{
+                    //               alert('인원이 가득 찼습니다.')
+                    //             }
+                    //             console.log(res)
+                    //           })
+                    //        }
+                    //       else{
+                    //         alert('비밀번호가 다름')
+                    //       }})
+                    // }
+                    // else{
+                    //   axios.get(`http://localhost:8080/chat/room/${data.roomId}`)
+                    //           .then(res=>{
+                    //             if(res.data.maxUserCnt > res.data.userCount){
+                    //               navigate("/chat", {state: {roomId:data.roomId, nickname: nickname}})
+                    //             }
+                    //             else{
+                    //               alert('인원이 가득 찼습니다.')
+                    //             }
+                    //             console.log(res)
+                    //           })
+                    // }
+                    navigate("/chat", {state: {roomId:"rooms", nickname: nickname}})
                     }}>
                     이동하기
                   </button>

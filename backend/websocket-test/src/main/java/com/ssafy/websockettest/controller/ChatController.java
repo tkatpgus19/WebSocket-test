@@ -1,7 +1,9 @@
 package com.ssafy.websockettest.controller;
 
 import com.ssafy.websockettest.model.ChatDto;
+import com.ssafy.websockettest.model.RoomDto;
 import com.ssafy.websockettest.repository.ChatRoomRepository;
+import com.ssafy.websockettest.repository.RoomService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,8 @@ public class ChatController {
     private final SimpMessageSendingOperations template;
 
     private final ChatRoomRepository repository;
+
+    private final RoomService roomService;
 
     // MessageMapping 을 통해 webSocket 로 들어오는 메시지를 발신 처리한다.
     // 이때 클라이언트에서는 /pub/chat/message 로 요청하게 되고 이것을 controller 가 받아서 처리한다.
@@ -54,6 +58,15 @@ public class ChatController {
         log.info("CHAT {}", chat);
         chat.setMessage(chat.getMessage());
         template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
+
+    }
+
+    @MessageMapping("/normal/make-room")
+    public void sendMessage2(@Payload RoomDto roomDto) {
+        log.info("CHAT {}", roomDto);
+        roomService.save(roomDto);
+
+        template.convertAndSend("/sub/normal/room-list", repository.roomList);
 
     }
 

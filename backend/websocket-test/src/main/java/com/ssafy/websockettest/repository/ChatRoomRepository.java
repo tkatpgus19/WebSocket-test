@@ -1,6 +1,7 @@
 package com.ssafy.websockettest.repository;
 
 import com.ssafy.websockettest.model.ChatRoom;
+import com.ssafy.websockettest.model.RoomDto;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -11,10 +12,19 @@ import java.util.*;
 @Slf4j
 public class ChatRoomRepository {
     private Map<String, ChatRoom> chatRoomMap;
+    public List<RoomDto> roomList;
 
     @PostConstruct
     private void init(){
         chatRoomMap = new LinkedHashMap<>();
+        roomList = new ArrayList<>();
+
+        // 방을 저장하는 방 세팅
+        ChatRoom chatRoom = ChatRoom.create("rooms", 100, null, false);
+        chatRoom.setRoomId("rooms");
+        chatRoomMap.put("rooms", chatRoom);
+
+
     }
 
     public List<ChatRoom> findAllRoom(){

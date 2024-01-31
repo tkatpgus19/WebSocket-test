@@ -40,12 +40,31 @@ function ChatRoom(){
   function onConnected(){
       client.current.subscribe('/sub/chat/room/' + roomId, onMessageReceived);
       client.current.send("/pub/chat/enterUser", {}, JSON.stringify({type: 'ENTER', "roomId": roomId, sender: nickname,}))
+
+
+      client.current.subscribe('/sub/normal/room-list', onMessageReceived2);
+      client.current.send('/pub/normal/make-room', {}, JSON.stringify({
+        roomType: "Normal",
+        roomName: "방이름1",
+        isLocked: false,
+        roomPassword: "",
+        problemTier: "골드1",
+        problemNo: "1001",
+        timeLimit: "100분",
+        language: "Java",
+        hasReview: false,
+    }))
     }
 
   function onError(error) {
       alert('error')
   }
 
+  function onMessageReceived2(payload){
+    const chattingWindow = document.querySelector('.chat')
+    // chattingWindow.value = JSON.parse(payload.body)
+    console.log(payload.body)
+  }
 
   function onMessageReceived(payload) {
       const chattingWindow = document.querySelector('.chat')
