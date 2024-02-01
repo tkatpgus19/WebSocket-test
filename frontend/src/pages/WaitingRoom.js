@@ -1,11 +1,68 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import SockJS from 'sockjs-client'
+import { Stomp } from '@stomp/stompjs';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 function WaitingRoom(){
   useEffect(()=>{
-    getRoomList();
+    // getRoomList();
+    axios.get('http://localhost:8080/rooms/normal')
+    .then(res=>setRoomList(res.data))
+
+    // 방이 실시간으로 바뀌는 것을 인지하기 위해 항상 해당 채널을 구독해야한다.
+    connectSession();
   }, [])
+
+  const client = useRef();
+
+  const connectSession = ()=>{
+    const socket = new SockJS('http://localhost:8080/ws-stomp')
+    client.current = Stomp.over(socket)
+    client.current.connect({}, onConnected, onError); 
+  }
+        
+  function onConnected(){
+      client.current.subscribe(`/sub/${roomType}/room-list`, onRoomInfoReceived);
+    }
+    function onError(error) {
+      alert('error')
+    }
+
+    function onRoomInfoReceived(payload){
+      // const chattingWindow = document.querySelector('.chat')
+      console.log(JSON.parse(payload.body))
+      setRoomList(JSON.parse(payload.body))
+    }
+    function test(){
+    //   client.current.send('/pub/make-room', {}, JSON.stringify({
+    //     roomType: roomType,
+    //     roomName: roomName,
+    //     isLocked: isLocked,
+    //     roomPassword: roomPassword,
+    //     problemTier: problemTier,
+    //     problemNo: problemNo,
+    //     timeLimit: timeLimit,
+    //     language: language,
+    //     hasReview: hasReview,
+    // }))
+    axios.post('http://localhost:8080/rooms', {
+      roomType: roomType,
+      roomName: roomName,
+      isLocked: isLocked,
+      roomPassword: roomPassword,
+      problemTier: problemTier,
+      problemNo: problemNo,
+      timeLimit: timeLimit,
+      language: language,
+      hasReview: hasReview,
+  })
+  .then(res=>{
+    navigate("/chat", {state: {roomId:res.data, nickname: nickname, roomType: roomType}})
+  })
+    }
+    
+
   // 채팅방 목록
   // 받아온 채팅방 목록이 비어있는지 체크하는 플래그
   // 방 이름
@@ -14,11 +71,36 @@ function WaitingRoom(){
   const [isVoid, setIsVoid] = useState(true);
   const [roomName, setRoomName] = useState('');
   const [nickname, setNickname] = useState('닉네임1');
-  const [secretChk, setSecretChk] = useState(false);
-  const [roomPwd, setRoomPwd] = useState('');
+  const [isLocked, setIsLocked] = useState(false);
+  const [roomPassword, setRoomPassword] = useState('');
   const [maxUserCnt, setMaxUserCnt] = useState(2);
+  const [roomType, setRoomType] = useState('normal');
+  const [problemTier, setProblemTier] = useState('골드1');
+  const [problemNo, setProblemNo] = useState(1001);
+  const [timeLimit, setTimeLimit] = useState(100);
+  const [language, setLanguate] = useState('JAVA');
+  const [hasReview, setHasReview] = useState(false)
 
- 
+  const [nowRoomType, setNowRoomType] = useState('Normal')
+
+  const onRoomTypeChange = (e)=>{
+    setRoomType(e.target.value)
+  }
+  const onProblemTierChange = (e)=>{
+    setProblemTier(e.target.value)
+  }
+  const onProblemNoChange = (e)=>{
+    setProblemNo(e.target.value)
+  }
+  const onTimeLimitChange = (e)=>{
+    setTimeLimit(e.target.value)
+  }
+  const onLanguageChange = (e)=>{
+    setLanguate(e.target.value)
+  }
+  const onHasReviewChange = (e)=>{
+    setHasReview(e.target.value)
+  }
   // 
 
   const navigate = useNavigate();
@@ -43,29 +125,14 @@ function WaitingRoom(){
   const onNicknameChange = (e)=>{
     setNickname(e.target.value)
   }
-
-  const makeRoom = ()=>{
-    if(roomName === ''){
-      alert('방 이름을 입력하세요!')
-    }
-    else{
-      console.log(maxUserCnt)
-      axios.post(`http://localhost:8080/chat/createroom?name=${roomName}&maxUserCnt=${maxUserCnt}&roomPwd=${roomPwd}&secretChk=${secretChk}`)
-        .then(res=>{
-          getRoomList()
-          setRoomName('')
-          console.log('방이름: ' + roomName)
-      })
-    }
-  }
   const onKeyDown = (e)=>{
     if(e.keyCode === 13){
-      makeRoom()
+      // makeRoom()
       setRoomName('')
     }
   }
   const onRoomPwdChange = (e)=>{
-    setRoomPwd(e.target.value)
+    setRoomPassword(e.target.value)
   }
   const onMaxUserCntChange = (e)=>{
     setMaxUserCnt(e.target.value)
@@ -74,6 +141,15 @@ function WaitingRoom(){
   return(
     <>
       <input onChange={onNicknameChange} placeholder='유저 이름'/>
+      <button onClick={()=>{setNowRoomType("normal");client.current.unsubscribe();
+      axios.get('http://localhost:8080/rooms/normal')
+        .then(res=>setRoomList(res.data))
+        client.current.connect({}, onConnected, onError); }}>노말전</button>
+      <button onClick={()=>{setNowRoomType("item");client.current.unsubscribe();
+      axios.get('http://localhost:8080/rooms/item')
+        .then(res=>setRoomList(res.data))
+        client.current.connect({}, onConnected, onError); }}>아이템전</button>
+      <h1>현재방: {nowRoomType}</h1>
       <table style={{marginTop: '20px', marginBottom: '20px'}}>
         <thead>
           <tr>
@@ -95,8 +171,8 @@ function WaitingRoom(){
               <tr key={index}>
                 <td>{index}</td>
                 <td>{data.roomName}</td>
-                <td>{data.secretChk ? 'Y' : 'N'}</td>
-                <td>{data.userCount+'/'+data.maxUserCnt}</td>
+                <td>{data.isLocked ? 'Y' : 'N'}</td>
+                <td>{data.userCnt+'/'+data.maxUserCnt}</td>
                 <td>
                   <button className='move' 
                   onClick={()=>{
@@ -132,7 +208,8 @@ function WaitingRoom(){
                     //             console.log(res)
                     //           })
                     // }
-                    navigate("/chat", {state: {roomId:"rooms", nickname: nickname}})
+                    console.log("룸 아이디: "+data.roomId)
+                    navigate("/chat", {state: {roomId:data.roomId, nickname: nickname, roomType: nowRoomType}})
                     }}>
                     이동하기
                   </button>
@@ -149,17 +226,28 @@ function WaitingRoom(){
       </div>
       
       <div style={{border: '1px solid wheat', width: '50%', margin:'50px auto'}}>
-        <p>방 이름</p>
-        <input placeholder='방 이름' onChange={onRoomNameChange} onKeyDown={onKeyDown} value={roomName}/><br/>
-        <p>비밀방 여부</p>
-        <input type='checkbox' onChange={()=>{setSecretChk(!secretChk);}} value={secretChk}/><br/>
+      <p style={{margin:'0'}}>방 타입</p><input placeholder='방 이름' onChange={onRoomTypeChange} onKeyDown={onKeyDown} value={roomType}/>
+      <p style={{margin:'0'}}>방 이름</p><input placeholder='방 이름' onChange={onRoomNameChange} onKeyDown={onKeyDown} value={roomName}/>
+      <p style={{margin:'0'}}>비밀방 여부</p>
+        <input type='checkbox' onChange={()=>{setIsLocked(!isLocked);}} value={isLocked}/><br/>
         {
-          secretChk ? <><p>비밀번호</p><input placeholder='비밀번호' onChange={onRoomPwdChange} value={roomPwd}/></> : null
+          isLocked ? <><p style={{margin:'0'}}>비밀번호</p><input placeholder='비밀번호' onChange={onRoomPwdChange} value={roomPassword}/></> : null
         }<br/>
+      <p style={{margin:'0'}}>문제 티어</p><input placeholder='문제 티어' onChange={onProblemTierChange} onKeyDown={onKeyDown} value={problemTier}/>
+      <p style={{margin:'0'}}>문제 번호</p><input type='number' placeholder='문제 번호' onChange={onProblemNoChange} onKeyDown={onKeyDown} value={problemNo}/>
+      <p style={{margin:'0'}}>시간 제한</p><input type='number' placeholder='시간 제한' onChange={onTimeLimitChange} onKeyDown={onKeyDown} value={timeLimit}/>
+      <p style={{margin:'0'}}>풀이 언어</p><input placeholder='풀이 언어' onChange={onLanguageChange} onKeyDown={onKeyDown} value={language}/>
+      <p style={{margin:'0'}}>리뷰 여부</p><input type='checkbox' onChange={()=>{setHasReview(!hasReview);}} value={hasReview}/><br/>
+    
+        
+{/*         
         <p>인원 제한</p>
-        <input type='number' placeholder='1명' onChange={onMaxUserCntChange} value={maxUserCnt} min={2} max={6}/><br/>
-        <button onClick={()=>{makeRoom(); setRoomPwd(''); setSecretChk(false)}} >방 만들기</button>
-        </div>
+        <input type='number' placeholder='1명' onChange={onMaxUserCntChange} value={maxUserCnt} min={2} max={6}/><br/> */}
+        <button onClick={()=>{setRoomPassword(''); setIsLocked(false);
+      test();
+      console.log(`roomType=${roomType}roomName=${roomName}isLocked=${isLocked}roomPassword=${roomPassword}problemTier=${problemTier}problemNo=${problemNo}timeLimit=${timeLimit}language=${language}hasReview=${hasReview}`)}} >방 만들기</button>
+
+      </div>
       
     </>
   );

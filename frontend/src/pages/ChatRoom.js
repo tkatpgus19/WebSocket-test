@@ -7,15 +7,16 @@ import style from '../styles/WaitingRoom.module.css'
 
 function ChatRoom(){
 	useEffect(()=>{
-		console.log(roomId)
 		connectChat();
+    console.log(`아오시바ㄹ랄ㄹㄹ러ㅓ랄 ${roomId}\n${nickname}\n${roomType}`)
 		
 	}, [])
 	let location = useLocation()
 	const navigate = useNavigate();
-	const {roomId, nickname} = location.state
+	const {roomId, nickname, roomType} = location.state
   const [message, setMessage] = useState('');
 	const [userlist, setUserlist] = useState([]);
+  const [master, setMaster] = useState('');
 	
 	
   // stomp 세션 연결 유지를 위한 변수
@@ -38,32 +39,12 @@ function ChatRoom(){
   }
         
   function onConnected(){
-      client.current.subscribe('/sub/chat/room/' + roomId, onMessageReceived);
-      client.current.send("/pub/chat/enterUser", {}, JSON.stringify({type: 'ENTER', "roomId": roomId, sender: nickname,}))
-
-
-      client.current.subscribe('/sub/normal/room-list', onMessageReceived2);
-      client.current.send('/pub/normal/make-room', {}, JSON.stringify({
-        roomType: "Normal",
-        roomName: "방이름1",
-        isLocked: false,
-        roomPassword: "",
-        problemTier: "골드1",
-        problemNo: "1001",
-        timeLimit: "100분",
-        language: "Java",
-        hasReview: false,
-    }))
-    }
+    client.current.subscribe('/sub/chat/room/' + roomId, onMessageReceived);
+    client.current.send("/pub/chat/enterUser", {}, JSON.stringify({type: 'ENTER', "roomId": roomId, sender: nickname, roomType: roomType}))
+  }
 
   function onError(error) {
       alert('error')
-  }
-
-  function onMessageReceived2(payload){
-    const chattingWindow = document.querySelector('.chat')
-    // chattingWindow.value = JSON.parse(payload.body)
-    console.log(payload.body)
   }
 
   function onMessageReceived(payload) {
@@ -72,6 +53,7 @@ function ChatRoom(){
       console.log("전송받은 데이터: ", chat)
       var value = `${chattingWindow.value}\n[${chat.sender}]\n${chat.message}`
       chattingWindow.value = value;
+      chattingWindow.scrollTop = chattingWindow.scrollHeight
 			showMembers()
   }
 
@@ -80,14 +62,14 @@ function ChatRoom(){
           "roomId": roomId,
           sender: nickname,
           message: message,
-          type: 'TALK'
+          type: 'TALK',
+          roomType: roomType,
       }))
       setMessage('')
   }
 
 	function showMembers(){
-		console.log('쇼우맴버 호출됐지롱ㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇ'+roomId)
-		axios.get(`http://localhost:8080/chat/userlist/${roomId}`)
+		axios.get(`http://localhost:8080/rooms/userlist?roomType=${roomType}&roomId=${roomId}`)
       .then(res=>{
         console.log(res.data)
 				setUserlist(res.data.reverse())
@@ -120,7 +102,7 @@ function ChatRoom(){
                     <div className={style.chatting_profile_img}>.</div>
                     <div className={style.chatting_profile_info}>
                       <h3 className={style.profile_info_nickname}>{userlist[index]}</h3>
-                      <h3 className={style.profile_info_roll}>MASTER</h3>
+                      <h3 className={style.profile_info_roll}>{userlist[index] === ''}</h3>
                     </div>
                   </div>
                   </>

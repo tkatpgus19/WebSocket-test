@@ -14,11 +14,13 @@ public class RoomDto {
     private boolean isLocked;
     private String roomPassword;
     private String problemTier;
-    private String problemNo;
-    private String timeLimit;
+    private int problemNo;
+    private int timeLimit;
     private String language;
-    private String hasReview;
+    private boolean hasReview;
+    private int UserCnt;
     private int maxUserCnt;
+
     private HashMap<String, String> userList = new HashMap<>();
 
     public RoomDto() {

@@ -20,11 +20,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Controller
 @Slf4j
 @CrossOrigin("*")
+@RequestMapping("/rooms")
 public class ChatController {
     private final SimpMessageSendingOperations template;
 
@@ -38,18 +40,18 @@ public class ChatController {
     @MessageMapping("/chat/enterUser")
     public void enterUser(@Payload ChatDto chat, SimpMessageHeaderAccessor headerAccessor) {
         // 채팅방 유저+1
-        repository.plusUserCnt(chat.getRoomId());
+        repository.plusUserCnt(chat);
 
         // 채팅방에 유저 추가 및 UserUUID 반환
-        String userUUID = repository.addUser(chat.getRoomId(), chat.getSender());
+        String userUUID = repository.addUser(chat);
 
         // 반환 결과를 socket session 에 userUUID 로 저장
         headerAccessor.getSessionAttributes().put("userUUID", userUUID);
         headerAccessor.getSessionAttributes().put("roomId", chat.getRoomId());
+        headerAccessor.getSessionAttributes().put("roomType", chat.getRoomType());
 
         chat.setMessage(chat.getSender() + " 님 입장!!");
         template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
-
     }
 
     // 해당 유저
@@ -58,17 +60,31 @@ public class ChatController {
         log.info("CHAT {}", chat);
         chat.setMessage(chat.getMessage());
         template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
-
     }
 
-    @MessageMapping("/normal/make-room")
-    public void sendMessage2(@Payload RoomDto roomDto) {
+    @PostMapping("")
+    public ResponseEntity<?> makeRoom(@RequestBody RoomDto roomDto) {
         log.info("CHAT {}", roomDto);
         roomService.save(roomDto);
-
-        template.convertAndSend("/sub/normal/room-list", repository.roomList);
-
+        if(roomDto.getRoomType().equals("normal")){
+            template.convertAndSend("/sub/normal/room-list", repository.normalRoomMap.values());
+        }
+        else{
+            template.convertAndSend("/sub/item/room-list", repository.itemRoomMap.values());
+        }
+        return new ResponseEntity<>(roomDto.getRoomId(), HttpStatus.OK);
     }
+
+
+    @GetMapping("/item")
+    public ResponseEntity<?> getItemRoomList(){
+        return new ResponseEntity<>(repository.itemRoomMap.values(), HttpStatus.OK);
+    }
+    @GetMapping("/normal")
+    public ResponseEntity<?> getNormalRoomList(){
+        return new ResponseEntity<>(repository.normalRoomMap.values(), HttpStatus.OK);
+    }
+
 
     // 유저 퇴장 시에는 EventListener 을 통해서 유저 퇴장을 확인
     @EventListener
@@ -80,15 +96,16 @@ public class ChatController {
         // stomp 세션에 있던 uuid 와 roomId 를 확인해서 채팅방 유저 리스트와 room 에서 해당 유저를 삭제
         String userUUID = (String) headerAccessor.getSessionAttributes().get("userUUID");
         String roomId = (String) headerAccessor.getSessionAttributes().get("roomId");
+        String roomType = (String) headerAccessor.getSessionAttributes().get("roomType");
 
         log.info("headAccessor {}", headerAccessor);
 
         // 채팅방 유저 -1
-        repository.minusUserCnt(roomId);
+        repository.minusUserCnt(roomType, roomId);
 
         // 채팅방 유저 리스트에서 UUID 유저 닉네임 조회 및 리스트에서 유저 삭제
-        String username = repository.getUserName(roomId, userUUID);
-        repository.delUser(roomId, userUUID);
+        String username = repository.getUserName(roomType, roomId, userUUID);
+        repository.delUser(roomType, roomId, userUUID);
 
         if (username != null) {
             log.info("User Disconnected : " + username);
@@ -105,10 +122,9 @@ public class ChatController {
     }
 
     // 채팅에 참여한 유저 리스트 반환
-    @GetMapping("/chat/userlist/{roomId}")
-    public ResponseEntity<?> userList(@PathVariable("roomId") String roomId) {
-        log.warn("룸정보: "+roomId);
-        return new ResponseEntity<>(repository.getUserList(roomId), HttpStatus.OK);
+    @GetMapping("/userlist")
+    public ResponseEntity<?> userList(@RequestParam("roomType") String roomType, @RequestParam("roomId") String roomId) {
+        return new ResponseEntity<>(repository.getUserList(roomType, roomId), HttpStatus.OK);
     }
 
     // 채팅에 참여한 유저 닉네임 중복 확인

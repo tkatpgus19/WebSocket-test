@@ -19,4 +19,5 @@ public class ChatDto {
     private String sender;
     private String message;
     private String time;
+    private String roomType;
 }

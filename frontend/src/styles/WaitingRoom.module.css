@@ -38,7 +38,7 @@
     transition: 0.5s all;
 }
 .chatting_room_container{
-    width: 100%;
+    width: 1620px;
     height: 80vh;
     border-radius: 15px;
     background-color: rgba(0, 0, 0, 0.5);
@@ -117,6 +117,8 @@
 
 .chatting_chat_container{
     background-color: #0777D2;
+    width: 500px;
+    height: 500px;
 }
 
 .chatting_room_right h1{

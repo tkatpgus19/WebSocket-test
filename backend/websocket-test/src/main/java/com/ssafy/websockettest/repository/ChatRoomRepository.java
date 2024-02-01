@@ -1,5 +1,6 @@
 package com.ssafy.websockettest.repository;
 
+import com.ssafy.websockettest.model.ChatDto;
 import com.ssafy.websockettest.model.ChatRoom;
 import com.ssafy.websockettest.model.RoomDto;
 import jakarta.annotation.PostConstruct;
@@ -12,27 +13,25 @@ import java.util.*;
 @Slf4j
 public class ChatRoomRepository {
     private Map<String, ChatRoom> chatRoomMap;
-    public List<RoomDto> roomList;
+    public Map<String, RoomDto> normalRoomMap;
+    public Map<String, RoomDto> itemRoomMap;
+
 
     @PostConstruct
     private void init(){
         chatRoomMap = new LinkedHashMap<>();
-        roomList = new ArrayList<>();
 
-        // 방을 저장하는 방 세팅
-        ChatRoom chatRoom = ChatRoom.create("rooms", 100, null, false);
-        chatRoom.setRoomId("rooms");
-        chatRoomMap.put("rooms", chatRoom);
-
-
+        // 방 목록
+        normalRoomMap = new LinkedHashMap<>();
+        itemRoomMap = new LinkedHashMap<>();
     }
 
-    public List<ChatRoom> findAllRoom(){
-        // 채팅방 생성순서 순으로 반환
-        List<ChatRoom> chatRooms = new ArrayList<>(chatRoomMap.values());
-        Collections.reverse(chatRooms);
-        return chatRooms;
-    }
+//    public List<ChatRoom> findAllRoom(){
+//        // 채팅방 생성순서 순으로 반환
+//        List<ChatRoom> chatRooms = new ArrayList<>(chatRoomMap.values());
+//        Collections.reverse(chatRooms);
+//        return chatRooms;
+//    }
 
     public ChatRoom findRoomById(String roomId) {
         return chatRoomMap.get(roomId);
@@ -45,21 +44,52 @@ public class ChatRoomRepository {
         return chatRoom;
     }
 
-    public void plusUserCnt(String roomId) {
-        ChatRoom room = chatRoomMap.get(roomId);
-        room.setUserCount(room.getUserCount()+1);
+    public void plusUserCnt(ChatDto chatDto) {
+        if(chatDto.getRoomType().equals("normal")){
+
+
+            log.warn(chatDto.getRoomId());
+            log.warn(normalRoomMap.toString());
+
+
+            RoomDto room = normalRoomMap.get(chatDto.getRoomId());
+            room.setUserCnt(room.getUserCnt()+1);
+        }
+        else{
+            RoomDto room = itemRoomMap.get(chatDto.getRoomId());
+            room.setUserCnt(room.getUserCnt()+1);
+        }
+
     }
 
-    public void minusUserCnt(String roomId) {
-        ChatRoom room = chatRoomMap.get(roomId);
-        room.setUserCount(room.getUserCount() - 1);
+    public void minusUserCnt(String roomType, String roomId) {
+        if(roomType.equals("normal")){
+            RoomDto room = normalRoomMap.get(roomId);
+            room.setUserCnt(room.getUserCnt() - 1);
+        }
+        else{
+            RoomDto room = itemRoomMap.get(roomId);
+            room.setUserCnt(room.getUserCnt() - 1);
+        }
     }
 
-    public String addUser(String roomId, String userName){
-        ChatRoom room = chatRoomMap.get(roomId);
+    public String addUser(ChatDto chatDto){
         String userUUID = UUID.randomUUID().toString();
-        // 아이디 중복 확인 후 userList 에 추가
-        room.getUserList().put(userUUID, userName);
+        if(chatDto.getRoomType().equals("normal")){
+            RoomDto room = normalRoomMap.get(chatDto.getRoomId());
+
+            if(room.getUserCnt()==1){
+                // 맛스타 설정하기
+            }
+            room.getUserList().put(userUUID, chatDto.getSender());
+        }
+        else{
+            RoomDto room = itemRoomMap.get(chatDto.getRoomId());
+            if(room.getUserCnt()==1){
+                // 맛스타 설정하기
+            }
+            room.getUserList().put(userUUID, chatDto.getSender());
+        }
 
         return userUUID;
     }
@@ -81,26 +111,44 @@ public class ChatRoomRepository {
     }
 
     // 채팅방 유저 리스트 삭제
-    public void delUser(String roomId, String userUUID){
-        ChatRoom room = chatRoomMap.get(roomId);
-        room.getUserList().remove(userUUID);
+    public void delUser(String roomType, String roomId, String userUUID){
+        if(roomType.equals("normal")){
+            RoomDto room = normalRoomMap.get(roomId);
+            room.getUserList().remove(userUUID);
+        }
+        else{
+            RoomDto room = itemRoomMap.get(roomId);
+            room.getUserList().remove(userUUID);
+        }
     }
 
     // 채팅방 userName 조회
-    public String getUserName(String roomId, String userUUID){
-        ChatRoom room = chatRoomMap.get(roomId);
-        return room.getUserList().get(userUUID);
+    public String getUserName(String roomType, String roomId, String userUUID){
+        if(roomType.equals("normal")){
+            RoomDto room = normalRoomMap.get(roomId);
+            return room.getUserList().get(userUUID);
+        }
+        else{
+            RoomDto room = normalRoomMap.get(roomId);
+            return room.getUserList().get(userUUID);
+        }
     }
 
     // 채팅방 전체 userlist 조회
-    public ArrayList<String> getUserList(String roomId){
+    public ArrayList<String> getUserList(String roomType, String roomId){
         ArrayList<String> list = new ArrayList<>();
 
-        ChatRoom room = chatRoomMap.get(roomId);
-
+        if(roomType.equals("normal")){
+            RoomDto room = normalRoomMap.get(roomId);
+            room.getUserList().forEach((key, value) -> list.add(value));
+        }
+        else{
+            RoomDto room = itemRoomMap.get(roomId);
+            room.getUserList().forEach((key, value) -> list.add(value));
+        }
         // hashmap 을 for 문을 돌린 후
         // value 값만 뽑아내서 list 에 저장 후 reutrn
-        room.getUserList().forEach((key, value) -> list.add(value));
+//        room.getUserList().forEach((key, value) -> list.add(value));
         return list;
     }
 
