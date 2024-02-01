@@ -67,10 +67,11 @@ public class ChatController {
         log.info("CHAT {}", roomDto);
         roomService.save(roomDto);
         if(roomDto.getRoomType().equals("normal")){
-            template.convertAndSend("/sub/normal/room-list", repository.normalRoomMap.values());
+            template.convertAndSend("/sub/normal/room-list", roomService.getNormalRoomList());
+            log.warn("normal room list : {}", roomService.getNormalRoomList());
         }
         else{
-            template.convertAndSend("/sub/item/room-list", repository.itemRoomMap.values());
+            template.convertAndSend("/sub/item/room-list", roomService.getItemRoomList());
         }
         return new ResponseEntity<>(roomDto.getRoomId(), HttpStatus.OK);
     }
@@ -78,11 +79,11 @@ public class ChatController {
 
     @GetMapping("/item")
     public ResponseEntity<?> getItemRoomList(){
-        return new ResponseEntity<>(repository.itemRoomMap.values(), HttpStatus.OK);
+        return new ResponseEntity<>(roomService.getItemRoomList(), HttpStatus.OK);
     }
     @GetMapping("/normal")
     public ResponseEntity<?> getNormalRoomList(){
-        return new ResponseEntity<>(repository.normalRoomMap.values(), HttpStatus.OK);
+        return new ResponseEntity<>(roomService.getNormalRoomList(), HttpStatus.OK);
     }
 
 

@@ -16,6 +16,8 @@ function WaitingRoom(){
 
   const client = useRef();
 
+  let rt = 'normal'
+
   const connectSession = ()=>{
     const socket = new SockJS('http://localhost:8080/ws-stomp')
     client.current = Stomp.over(socket)
@@ -23,7 +25,7 @@ function WaitingRoom(){
   }
         
   function onConnected(){
-      client.current.subscribe(`/sub/${roomType}/room-list`, onRoomInfoReceived);
+      client.current.subscribe(`/sub/${rt}/room-list`, onRoomInfoReceived);
     }
     function onError(error) {
       alert('error')
@@ -31,7 +33,7 @@ function WaitingRoom(){
 
     function onRoomInfoReceived(payload){
       // const chattingWindow = document.querySelector('.chat')
-      console.log(JSON.parse(payload.body))
+      // console.log("방정보 획득\n"+JSON.parse(payload.body))
       setRoomList(JSON.parse(payload.body))
     }
     function test(){
@@ -58,7 +60,7 @@ function WaitingRoom(){
       hasReview: hasReview,
   })
   .then(res=>{
-    navigate("/chat", {state: {roomId:res.data, nickname: nickname, roomType: roomType}})
+    // navigate("/chat", {state: {roomId:res.data, nickname: nickname, roomType: roomType}})/
   })
     }
     
@@ -81,7 +83,7 @@ function WaitingRoom(){
   const [language, setLanguate] = useState('JAVA');
   const [hasReview, setHasReview] = useState(false)
 
-  const [nowRoomType, setNowRoomType] = useState('Normal')
+  const [nowRoomType, setNowRoomType] = useState('normal')
 
   const onRoomTypeChange = (e)=>{
     setRoomType(e.target.value)
@@ -141,14 +143,14 @@ function WaitingRoom(){
   return(
     <>
       <input onChange={onNicknameChange} placeholder='유저 이름'/>
-      <button onClick={()=>{setNowRoomType("normal");client.current.unsubscribe();
+      <button onClick={()=>{client.current.disconnect();setNowRoomType("normal"); rt = 'normal'
       axios.get('http://localhost:8080/rooms/normal')
-        .then(res=>setRoomList(res.data))
-        client.current.connect({}, onConnected, onError); }}>노말전</button>
-      <button onClick={()=>{setNowRoomType("item");client.current.unsubscribe();
+        .then(res=>{setRoomList(res.data); connectSession()})
+        }}>노말전</button>
+      <button onClick={()=>{client.current.disconnect();setNowRoomType("item"); rt = 'item'
       axios.get('http://localhost:8080/rooms/item')
-        .then(res=>setRoomList(res.data))
-        client.current.connect({}, onConnected, onError); }}>아이템전</button>
+        .then(res=>{setRoomList(res.data);  connectSession()})
+         }}>아이템전</button>
       <h1>현재방: {nowRoomType}</h1>
       <table style={{marginTop: '20px', marginBottom: '20px'}}>
         <thead>

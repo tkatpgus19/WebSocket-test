@@ -1,6 +1,5 @@
 package com.ssafy.websockettest.controller;
 
-import com.ssafy.websockettest.model.ChatRoom;
 import com.ssafy.websockettest.repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

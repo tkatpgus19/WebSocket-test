@@ -5,18 +5,27 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class RoomService {
 
-    private final ChatRoomRepository chatRoomRepository;
+    private final RoomRepository roomRepository;
     public void save(RoomDto roomDto){
         if(roomDto.getRoomType().equals("normal")){
-            chatRoomRepository.normalRoomMap.put(roomDto.getRoomId(), roomDto);
+            roomRepository.getNormalRoomMap().put(roomDto.getRoomId(), roomDto);
         }
         else{
-            chatRoomRepository.itemRoomMap.put(roomDto.getRoomId(), roomDto);
+            roomRepository.getItemRoomMap().put(roomDto.getRoomId(), roomDto);
         }
+    }
+
+    public List<RoomDto> getNormalRoomList(){
+        return roomRepository.getNormalRoomMap().values().stream().toList();
+    }
+    public List<RoomDto> getItemRoomList(){
+        return roomRepository.getItemRoomMap().values().stream().toList();
     }
 }
