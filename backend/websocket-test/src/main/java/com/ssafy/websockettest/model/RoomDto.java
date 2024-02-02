@@ -1,6 +1,5 @@
 package com.ssafy.websockettest.model;
 
-import lombok.Builder;
 import lombok.Data;
 
 import java.util.HashMap;
@@ -11,7 +10,7 @@ public class RoomDto {
     private String roomId;
     private String roomType;
     private String roomName;
-    private boolean isLocked;
+    private boolean hasPassword;
     private String roomPassword;
     private String problemTier;
     private int problemNo;
@@ -20,8 +19,10 @@ public class RoomDto {
     private boolean hasReview;
     private int UserCnt;
     private int maxUserCnt;
+    private String master;
 
     private HashMap<String, String> userList = new HashMap<>();
+    private HashMap<String, String> readyList = new HashMap<>();
 
     public RoomDto() {
         this.roomId = UUID.randomUUID().toString();

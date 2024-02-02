@@ -24,10 +24,15 @@ table{
 td, th{
   border: 1px solid black;
 }
+td{
+  background-color: rgb(0, 146, 251);
+  color: white;
+  font-weight: bold;
+}
 .move{
-  background-color: wheat;
+  background-color: rgb(19, 98, 255);
   width: 100%;
-  color: black;
+  color: white;
   cursor: pointer;
   transition: 0.5s all;
 }

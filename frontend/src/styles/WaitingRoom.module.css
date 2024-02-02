@@ -38,8 +38,8 @@
     transition: 0.5s all;
 }
 .chatting_room_container{
-    width: 1620px;
-    height: 80vh;
+    width: 1450px;
+    height: 640px;
     border-radius: 15px;
     background-color: rgba(0, 0, 0, 0.5);
     display: flex;
@@ -68,7 +68,7 @@
 .chatting_room_profile{
     width: 180px;
     height: 250px;
-    margin: 30px auto;
+    margin: 20px auto 30px;
 }
 
 .chatting_profile_img{

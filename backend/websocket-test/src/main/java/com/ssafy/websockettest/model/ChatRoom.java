@@ -1,6 +1,5 @@
 package com.ssafy.websockettest.model;
 
-import lombok.Builder;
 import lombok.Data;
 
 import java.util.HashMap;

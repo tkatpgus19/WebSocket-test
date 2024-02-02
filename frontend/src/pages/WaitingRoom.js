@@ -32,36 +32,25 @@ function WaitingRoom(){
     }
 
     function onRoomInfoReceived(payload){
-      // const chattingWindow = document.querySelector('.chat')
-      // console.log("방정보 획득\n"+JSON.parse(payload.body))
       setRoomList(JSON.parse(payload.body))
     }
     function test(){
-    //   client.current.send('/pub/make-room', {}, JSON.stringify({
-    //     roomType: roomType,
-    //     roomName: roomName,
-    //     isLocked: isLocked,
-    //     roomPassword: roomPassword,
-    //     problemTier: problemTier,
-    //     problemNo: problemNo,
-    //     timeLimit: timeLimit,
-    //     language: language,
-    //     hasReview: hasReview,
-    // }))
-    axios.post('http://localhost:8080/rooms', {
-      roomType: roomType,
-      roomName: roomName,
-      isLocked: isLocked,
-      roomPassword: roomPassword,
-      problemTier: problemTier,
-      problemNo: problemNo,
-      timeLimit: timeLimit,
-      language: language,
-      hasReview: hasReview,
-  })
-  .then(res=>{
-    // navigate("/chat", {state: {roomId:res.data, nickname: nickname, roomType: roomType}})/
-  })
+      console.log('니가 만든 방: ' + isLocked)
+      axios.post('http://localhost:8080/rooms', {
+        roomType: roomType,
+        roomName: roomName,
+        hasPassword: isLocked,
+        roomPassword: roomPassword,
+        problemTier: problemTier,
+        problemNo: problemNo,
+        timeLimit: timeLimit,
+        language: language,
+        hasReview: hasReview,
+        master: nickname
+    })
+      .then(res=>{
+        navigate("/chat", {state: {roomId:res.data, nickname: nickname, roomType: roomType}})
+      })
     }
     
 
@@ -103,22 +92,8 @@ function WaitingRoom(){
   const onHasReviewChange = (e)=>{
     setHasReview(e.target.value)
   }
-  // 
 
   const navigate = useNavigate();
-
-  const getRoomList = ()=>{
-    axios.get('http://localhost:8080')
-      .then(res=>{
-        console.log(res.data)
-        if(res.data[0] !== undefined){
-          setIsVoid(false)
-        }
-        var tmp = res.data
-        setRoomList(tmp)
-      })
-      .catch(err=>console.log(err))
-  };
 
   const onRoomNameChange = (e)=>{
     setRoomName(e.target.value)
@@ -127,17 +102,8 @@ function WaitingRoom(){
   const onNicknameChange = (e)=>{
     setNickname(e.target.value)
   }
-  const onKeyDown = (e)=>{
-    if(e.keyCode === 13){
-      // makeRoom()
-      setRoomName('')
-    }
-  }
   const onRoomPwdChange = (e)=>{
     setRoomPassword(e.target.value)
-  }
-  const onMaxUserCntChange = (e)=>{
-    setMaxUserCnt(e.target.value)
   }
   
   return(
@@ -152,94 +118,95 @@ function WaitingRoom(){
         .then(res=>{setRoomList(res.data);  connectSession()})
          }}>아이템전</button>
       <h1>현재방: {nowRoomType}</h1>
-      <table style={{marginTop: '20px', marginBottom: '20px'}}>
-        <thead>
-          <tr>
-            <th>채팅방 번호</th>
-            <th>채팅방 이름</th>
-            <th>비밀방 여부</th>
-            <th>현재 인원</th>
-            <th>입장하기</th>
-          </tr>
-        </thead>
-        <tbody>
-          {
-            isVoid ? <tr><td colSpan={'5'}>채팅방이 존재하지 않습니다.</td></tr> : null
-          }
-          {
-            roomList.map((data, index)=>{
-            return(
-              <>
-              <tr key={index}>
-                <td>{index}</td>
-                <td>{data.roomName}</td>
-                <td>{data.isLocked ? 'Y' : 'N'}</td>
-                <td>{data.userCnt+'/'+data.maxUserCnt}</td>
-                <td>
-                  <button className='move' 
-                  onClick={()=>{
-                    // if(data.secretChk){                      
-                    //   const passwd = prompt("비밀번호")
-                    //   axios.post(`http://localhost:8080/chat/checkPwd?roomId=${data.roomId}&roomPwd=${passwd}`)
-                    //     .then(res=>{
-                    //       if(res.data){
-                    //         axios.get(`http://localhost:8080/chat/room/${data.roomId}`)
-                    //           .then(res=>{
-                    //             if(res.data.maxUserCnt > res.data.userCount){
-                    //               navigate("/chat", {state: {roomId:data.roomId, nickname: nickname}})
-                    //             }
-                    //             else{
-                    //               alert('인원이 가득 찼습니다.')
-                    //             }
-                    //             console.log(res)
-                    //           })
-                    //        }
-                    //       else{
-                    //         alert('비밀번호가 다름')
-                    //       }})
-                    // }
-                    // else{
-                    //   axios.get(`http://localhost:8080/chat/room/${data.roomId}`)
-                    //           .then(res=>{
-                    //             if(res.data.maxUserCnt > res.data.userCount){
-                    //               navigate("/chat", {state: {roomId:data.roomId, nickname: nickname}})
-                    //             }
-                    //             else{
-                    //               alert('인원이 가득 찼습니다.')
-                    //             }
-                    //             console.log(res)
-                    //           })
-                    // }
-                    console.log("룸 아이디: "+data.roomId)
-                    navigate("/chat", {state: {roomId:data.roomId, nickname: nickname, roomType: nowRoomType}})
-                    }}>
-                    이동하기
-                  </button>
-                </td>
-              </tr>
-              </>
-            )
-            })
-          }
-        </tbody>
-      </table>
-      <div>
-        <button onClick={getRoomList}>방목록 불러오기</button>
+      <div style={{background: 'white', width:'fit-content', margin: 'auto'}}>
+        <table style={{width: '100%'}}>
+          <thead>
+            <tr>
+              <th>채팅방 번호</th>
+              <th>채팅방 이름</th>
+              <th>비밀방 여부</th>
+              <th>리뷰 여부</th>
+              <th>현재 인원</th>
+              <th>입장하기</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              !roomList[0] ? <tr><td colSpan={'6'}>채팅방이 존재하지 않습니다.</td></tr> : null
+            }
+            {
+              roomList.map((data, index)=>{
+                console.log(data)
+              return(
+                <>
+                <tr key={index}>
+                  <td>{index}</td>
+                  <td>{data.roomName}</td>
+                  <td>{data.hasPassword ? 'Y' : 'N'}</td>
+                  <td>{data.hasReview ? 'Y' : 'N'}</td>
+                  <td>{data.userCnt+'/'+data.maxUserCnt}</td>
+                  <td>
+                    <button className='move' 
+                    onClick={()=>{
+                      // if(data.secretChk){                      
+                      //   const passwd = prompt("비밀번호")
+                      //   axios.post(`http://localhost:8080/chat/checkPwd?roomId=${data.roomId}&roomPwd=${passwd}`)
+                      //     .then(res=>{
+                      //       if(res.data){
+                      //         axios.get(`http://localhost:8080/chat/room/${data.roomId}`)
+                      //           .then(res=>{
+                      //             if(res.data.maxUserCnt > res.data.userCount){
+                      //               navigate("/chat", {state: {roomId:data.roomId, nickname: nickname}})
+                      //             }
+                      //             else{
+                      //               alert('인원이 가득 찼습니다.')
+                      //             }
+                      //             console.log(res)
+                      //           })
+                      //        }
+                      //       else{
+                      //         alert('비밀번호가 다름')
+                      //       }})
+                      // }
+                      // else{
+                      //   axios.get(`http://localhost:8080/chat/room/${data.roomId}`)
+                      //           .then(res=>{
+                      //             if(res.data.maxUserCnt > res.data.userCount){
+                      //               navigate("/chat", {state: {roomId:data.roomId, nickname: nickname}})
+                      //             }
+                      //             else{
+                      //               alert('인원이 가득 찼습니다.')
+                      //             }
+                      //             console.log(res)
+                      //           })
+                      // }
+                      console.log("룸 아이디: "+data.roomId)
+                      navigate("/chat", {state: {roomId:data.roomId, nickname: nickname, roomType: nowRoomType}})
+                      }}>
+                      이동하기
+                    </button>
+                  </td>
+                </tr>
+                </>
+              )
+              })
+            }
+          </tbody>
+        </table>
       </div>
-      
-      <div style={{border: '1px solid wheat', width: '50%', margin:'50px auto'}}>
-      <p style={{margin:'0'}}>방 타입</p><input placeholder='방 이름' onChange={onRoomTypeChange} onKeyDown={onKeyDown} value={roomType}/>
-      <p style={{margin:'0'}}>방 이름</p><input placeholder='방 이름' onChange={onRoomNameChange} onKeyDown={onKeyDown} value={roomName}/>
+      <div style={{border: '1px solid wheat', width: '30%', margin:'50px auto', background: '#61dafb', padding: '50px', border: '3px solid black'}}>
+      <p style={{margin:'0'}}>방 타입</p><input placeholder='방 이름' onChange={onRoomTypeChange} value={roomType}/>
+      <p style={{margin:'0'}}>방 이름</p><input placeholder='방 이름' onChange={onRoomNameChange} value={roomName}/>
       <p style={{margin:'0'}}>비밀방 여부</p>
         <input type='checkbox' onChange={()=>{setIsLocked(!isLocked);}} value={isLocked}/><br/>
         {
           isLocked ? <><p style={{margin:'0'}}>비밀번호</p><input placeholder='비밀번호' onChange={onRoomPwdChange} value={roomPassword}/></> : null
         }<br/>
-      <p style={{margin:'0'}}>문제 티어</p><input placeholder='문제 티어' onChange={onProblemTierChange} onKeyDown={onKeyDown} value={problemTier}/>
-      <p style={{margin:'0'}}>문제 번호</p><input type='number' placeholder='문제 번호' onChange={onProblemNoChange} onKeyDown={onKeyDown} value={problemNo}/>
-      <p style={{margin:'0'}}>시간 제한</p><input type='number' placeholder='시간 제한' onChange={onTimeLimitChange} onKeyDown={onKeyDown} value={timeLimit}/>
-      <p style={{margin:'0'}}>풀이 언어</p><input placeholder='풀이 언어' onChange={onLanguageChange} onKeyDown={onKeyDown} value={language}/>
-      <p style={{margin:'0'}}>리뷰 여부</p><input type='checkbox' onChange={()=>{setHasReview(!hasReview);}} value={hasReview}/><br/>
+      <p style={{margin:'0'}}>문제 티어</p><input placeholder='문제 티어' onChange={onProblemTierChange} value={problemTier}/>
+      <p style={{margin:'0'}}>문제 번호</p><input type='number' placeholder='문제 번호' onChange={onProblemNoChange} value={problemNo}/>
+      <p style={{margin:'0'}}>시간 제한</p><input type='number' placeholder='시간 제한' onChange={onTimeLimitChange} value={timeLimit}/>
+      <p style={{margin:'0'}}>풀이 언어</p><input placeholder='풀이 언어' onChange={onLanguageChange} value={language}/>
+      <p style={{margin:'0'}}>리뷰 여부</p><input type='checkbox' onChange={onHasReviewChange} value={hasReview}/><br/>
     
         
 {/*         

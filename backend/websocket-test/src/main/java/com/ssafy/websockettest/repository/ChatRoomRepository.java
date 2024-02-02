@@ -37,30 +37,6 @@ public class ChatRoomRepository {
         return chatRoomMap.get(roomId);
     }
 
-    public ChatRoom createChatRoom(String roomName, int maxUserCnt, String roomPwd, boolean secretChk) {
-        ChatRoom chatRoom = ChatRoom.create(roomName, maxUserCnt, roomPwd, secretChk);
-        chatRoomMap.put(chatRoom.getRoomId(), chatRoom);
-        log.warn("챗 룸 맵은 다음과 같다: "+chatRoomMap);
-        return chatRoom;
-    }
-
-    public void plusUserCnt(ChatDto chatDto) {
-        if(chatDto.getRoomType().equals("normal")){
-
-
-            log.warn(chatDto.getRoomId());
-            log.warn(normalRoomMap.toString());
-
-
-            RoomDto room = normalRoomMap.get(chatDto.getRoomId());
-            room.setUserCnt(room.getUserCnt()+1);
-        }
-        else{
-            RoomDto room = itemRoomMap.get(chatDto.getRoomId());
-            room.setUserCnt(room.getUserCnt()+1);
-        }
-
-    }
 
     public void minusUserCnt(String roomType, String roomId) {
         if(roomType.equals("normal")){
@@ -71,27 +47,6 @@ public class ChatRoomRepository {
             RoomDto room = itemRoomMap.get(roomId);
             room.setUserCnt(room.getUserCnt() - 1);
         }
-    }
-
-    public String addUser(ChatDto chatDto){
-        String userUUID = UUID.randomUUID().toString();
-        if(chatDto.getRoomType().equals("normal")){
-            RoomDto room = normalRoomMap.get(chatDto.getRoomId());
-
-            if(room.getUserCnt()==1){
-                // 맛스타 설정하기
-            }
-            room.getUserList().put(userUUID, chatDto.getSender());
-        }
-        else{
-            RoomDto room = itemRoomMap.get(chatDto.getRoomId());
-            if(room.getUserCnt()==1){
-                // 맛스타 설정하기
-            }
-            room.getUserList().put(userUUID, chatDto.getSender());
-        }
-
-        return userUUID;
     }
 
     // 채팅방 유저 이름 중복 확인
@@ -110,18 +65,6 @@ public class ChatRoomRepository {
         return tmp;
     }
 
-    // 채팅방 유저 리스트 삭제
-    public void delUser(String roomType, String roomId, String userUUID){
-        if(roomType.equals("normal")){
-            RoomDto room = normalRoomMap.get(roomId);
-            room.getUserList().remove(userUUID);
-        }
-        else{
-            RoomDto room = itemRoomMap.get(roomId);
-            room.getUserList().remove(userUUID);
-        }
-    }
-
     // 채팅방 userName 조회
     public String getUserName(String roomType, String roomId, String userUUID){
         if(roomType.equals("normal")){
@@ -132,24 +75,6 @@ public class ChatRoomRepository {
             RoomDto room = normalRoomMap.get(roomId);
             return room.getUserList().get(userUUID);
         }
-    }
-
-    // 채팅방 전체 userlist 조회
-    public ArrayList<String> getUserList(String roomType, String roomId){
-        ArrayList<String> list = new ArrayList<>();
-
-        if(roomType.equals("normal")){
-            RoomDto room = normalRoomMap.get(roomId);
-            room.getUserList().forEach((key, value) -> list.add(value));
-        }
-        else{
-            RoomDto room = itemRoomMap.get(roomId);
-            room.getUserList().forEach((key, value) -> list.add(value));
-        }
-        // hashmap 을 for 문을 돌린 후
-        // value 값만 뽑아내서 list 에 저장 후 reutrn
-//        room.getUserList().forEach((key, value) -> list.add(value));
-        return list;
     }
 
     // maxUserCnt 에 따른 채팅방 입장 여부

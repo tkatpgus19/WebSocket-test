@@ -8,14 +8,13 @@ import style from '../styles/WaitingRoom.module.css'
 function ChatRoom(){
 	useEffect(()=>{
 		connectChat();
-    console.log(`아오시바ㄹ랄ㄹㄹ러ㅓ랄 ${roomId}\n${nickname}\n${roomType}`)
-		
 	}, [])
 	let location = useLocation()
 	const navigate = useNavigate();
 	const {roomId, nickname, roomType} = location.state
   const [message, setMessage] = useState('');
 	const [userlist, setUserlist] = useState([]);
+  const [readylist, setReadylist] = useState([]);
   const [master, setMaster] = useState('');
 	
 	
@@ -54,7 +53,7 @@ function ChatRoom(){
       var value = `${chattingWindow.value}\n[${chat.sender}]\n${chat.message}`
       chattingWindow.value = value;
       chattingWindow.scrollTop = chattingWindow.scrollHeight
-			showMembers()
+			getuserList()
   }
 
   function sendMessage(){
@@ -68,11 +67,10 @@ function ChatRoom(){
       setMessage('')
   }
 
-	function showMembers(){
-		axios.get(`http://localhost:8080/rooms/userlist?roomType=${roomType}&roomId=${roomId}`)
+	function getuserList(){
+		axios.get(`http://localhost:8080/rooms/info?roomType=${roomType}&roomId=${roomId}`)
       .then(res=>{
-        console.log(res.data)
-				setUserlist(res.data.reverse())
+        setUserlist(Object.values(res.data.userList))
       })
       .catch(err=>console.log(err))
 	}
@@ -112,7 +110,7 @@ function ChatRoom(){
           </div>
           <div className={style.chatting_room_right}>
             
-            <textarea className={style.chatting_chat_container + ' chat'} disabled='true'></textarea>
+            <textarea className={style.chatting_chat_container + ' chat'} disabled={true}></textarea>
             <div className={style.chatting_chat_box}>
               <input className={style.chatting_chat_input} onChange={onMessageChange} onKeyDown={onKeyDown} value={message}/>
               <div className={style.chatting_chat_btn} onClick={sendMessage}>보내기</div>
