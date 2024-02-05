@@ -73,28 +73,29 @@ public class RoomService {
 
     // 방에서 인원 삭제
     public void delUser(String roomType, String roomId, String userUUID){
-        if(roomType.equals("normal")){
-            RoomDto room = roomRepository.getNormalRoomMap().get(roomId);
-            room.setUserCnt(room.getUserCnt()-1);
-            String user = room.getUserList().get(userUUID);
+        if(roomType != null) {
+            if (roomType.equals("normal")) {
+                RoomDto room = roomRepository.getNormalRoomMap().get(roomId);
+                room.setUserCnt(room.getUserCnt() - 1);
+                String user = room.getUserList().get(userUUID);
 
-            room.getUserList().remove(userUUID);
-            room.getReadyList().remove(user);
+                room.getUserList().remove(userUUID);
+                room.getReadyList().remove(user);
 
-            if(room.getUserCnt() == 0){
-                roomRepository.getNormalRoomMap().remove(roomId);
-            }
-        }
-        else{
-            RoomDto room = roomRepository.getItemRoomMap().get(roomId);
-            room.setUserCnt(room.getUserCnt()-1);
-            String user = room.getUserList().get(userUUID);
+                if (room.getUserCnt() == 0) {
+                    roomRepository.getNormalRoomMap().remove(roomId);
+                }
+            } else {
+                RoomDto room = roomRepository.getItemRoomMap().get(roomId);
+                room.setUserCnt(room.getUserCnt() - 1);
+                String user = room.getUserList().get(userUUID);
 
-            room.getUserList().remove(userUUID);
-            room.getReadyList().remove(user);
+                room.getUserList().remove(userUUID);
+                room.getReadyList().remove(user);
 
-            if(room.getUserCnt() == 0){
-                roomRepository.getItemRoomMap().remove(roomId);
+                if (room.getUserCnt() == 0) {
+                    roomRepository.getItemRoomMap().remove(roomId);
+                }
             }
         }
     }
@@ -102,11 +103,16 @@ public class RoomService {
     // 게임방 참여인원 조회
     public HashMap<String, String> getUserStatus(String roomType, String roomId){
         if(roomType.equals("normal")){
-            return roomRepository.getNormalRoomMap().get(roomId).getReadyList();
+            if(roomRepository.getNormalRoomMap().getOrDefault(roomId, null) != null) {
+                return roomRepository.getNormalRoomMap().get(roomId).getReadyList();
+            }
         }
         else{
-            return roomRepository.getItemRoomMap().get(roomId).getReadyList();
+            if(roomRepository.getItemRoomMap().getOrDefault(roomId, null) != null) {
+                return roomRepository.getItemRoomMap().get(roomId).getReadyList();
+            }
         }
+        return null;
     }
 
     public RoomDto getRoomInfo(String roomType, String roomId){
@@ -120,14 +126,16 @@ public class RoomService {
 
     // 채팅방 userName 조회
     public String getUserName(String roomType, String roomId, String userUUID){
-        if(roomType.equals("normal")){
-            RoomDto room = roomRepository.getNormalRoomMap().get(roomId);
-            return room.getUserList().get(userUUID);
+        if(roomType != null) {
+            if (roomType.equals("normal")) {
+                RoomDto room = roomRepository.getNormalRoomMap().get(roomId);
+                return room.getUserList().get(userUUID);
+            } else {
+                RoomDto room = roomRepository.getItemRoomMap().get(roomId);
+                return room.getUserList().get(userUUID);
+            }
         }
-        else{
-            RoomDto room = roomRepository.getItemRoomMap().get(roomId);
-            return room.getUserList().get(userUUID);
-        }
+        return null;
     }
 
     public void ready(ChatDto chat){

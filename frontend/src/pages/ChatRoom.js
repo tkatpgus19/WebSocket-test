@@ -8,6 +8,13 @@ import style from '../styles/WaitingRoom.module.css'
 function ChatRoom(){
 	useEffect(()=>{
 		connectChat();
+    (() => {
+      window.addEventListener("beforeunload", preventClose);    
+    })();
+
+    return () => {
+        window.removeEventListener("beforeunload", preventClose);
+  };
 	}, [])
 	let location = useLocation()
 	const navigate = useNavigate();
@@ -18,6 +25,12 @@ function ChatRoom(){
   const [master, setMaster] = useState('');
 	const [ready, setReady] = useState(false);
 	
+
+  // 새로고침 막기 변수
+  const preventClose = (e) => {
+    e.preventDefault();
+    e.returnValue = ""; // chrome에서는 설정이 필요해서 넣은 코드
+  }
   // stomp 세션 연결 유지를 위한 변수
   const client = useRef();
 
@@ -31,8 +44,11 @@ function ChatRoom(){
     }
   }
 	
+  const SERVER_URL = "ec2-3-39-233-234.ap-northeast-2.compute.amazonaws.com"
+  // const SERVER_URL = "localhost"
+
 	const connectChat = ()=>{
-    const socket = new SockJS('http://172.30.1.37:8080/ws-stomp')
+    const socket = new SockJS(`http://${SERVER_URL}:8080/ws-stomp`)
     client.current = Stomp.over(socket)
     client.current.connect({}, onConnected, onError); 
   }
@@ -75,7 +91,7 @@ function ChatRoom(){
   }
 
 	function getUserList(){
-		axios.get(`http://172.30.1.37:8080/rooms/userStatus?roomType=${roomType}&roomId=${roomId}`)
+		axios.get(`http://${SERVER_URL}:8080/rooms/userStatus?roomType=${roomType}&roomId=${roomId}`)
       .then(res=>{
         setUserlist(Object.keys(res.data))
         setReadylist(Object.values(res.data))
@@ -85,7 +101,7 @@ function ChatRoom(){
 	}
 
   function getReady(){
-    axios.put('http://172.30.1.37:8080/rooms/ready', {
+    axios.put(`http://${SERVER_URL}:8080/rooms/ready`, {
       "roomId": roomId,
       sender: nickname,
       message: 'ready',

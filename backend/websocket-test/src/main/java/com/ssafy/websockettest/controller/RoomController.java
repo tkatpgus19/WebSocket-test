@@ -89,11 +89,11 @@ public class RoomController {
                     .build();
 
             template.convertAndSend("/sub/chat/room/" + roomId, chat);
-
-            template.convertAndSend("/sub/room/"+roomId+"/status", roomService.getUserStatus(roomType, roomId));
-
             template.convertAndSend("/sub/normal/room-list", roomService.getNormalRoomList());
             template.convertAndSend("/sub/item/room-list", roomService.getItemRoomList());
+            if(roomService.getUserStatus(roomType, roomId) != null) {
+                template.convertAndSend("/sub/room/" + roomId + "/status", roomService.getUserStatus(roomType, roomId));
+            }
         }
     }
 
