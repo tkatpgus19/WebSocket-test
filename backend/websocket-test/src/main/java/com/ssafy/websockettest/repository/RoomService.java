@@ -6,9 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -49,11 +47,11 @@ public class RoomService {
 
             // 마스터 등록
             if(room.getUserCnt()==1){
-                room.getReadyList().put(user, "wait");
+                room.getReadyList().put(user, "MASTER");
             }
             // 참가자 대기상태 설정
             else {
-                room.getReadyList().put(user, "waiting");
+                room.getReadyList().put(user, "WAITING");
             }
         }
         else{
@@ -63,11 +61,11 @@ public class RoomService {
 
             // 마스터 등록
             if(room.getUserCnt()==1){
-                room.getReadyList().put(user, "wait");
+                room.getReadyList().put(user, "MASTER");
             }
             // 참가자들 추가 및 대기상태 설정
             else {
-                room.getReadyList().put(user, "waiting");
+                room.getReadyList().put(user, "WAITING");
             }
         }
         return userUUID;
@@ -96,7 +94,7 @@ public class RoomService {
             room.getReadyList().remove(user);
 
             if(room.getUserCnt() == 0){
-                roomRepository.getNormalRoomMap().remove(roomId);
+                roomRepository.getItemRoomMap().remove(roomId);
             }
         }
     }
@@ -132,4 +130,69 @@ public class RoomService {
         }
     }
 
+    public void ready(ChatDto chat){
+        if(chat.getRoomType().equals("normal")){
+            RoomDto room = roomRepository.getNormalRoomMap().get(chat.getRoomId());
+            String status = room.getReadyList().get(chat.getSender());
+            if(status.equals("MASTER")){
+
+            }
+            else if(status.equals("WAITING")){
+                room.getReadyList().replace(chat.getSender(), "READY");
+            }
+            else{
+                room.getReadyList().replace(chat.getSender(), "WAITING");
+            }
+        }
+        else{
+            RoomDto room = roomRepository.getItemRoomMap().get(chat.getRoomId());
+            String status = room.getReadyList().get(chat.getSender());
+            if(status.equals("MASTER")){
+
+            }
+            else if(status.equals("WAITING")){
+                room.getReadyList().replace(chat.getSender(), "READY");
+            }
+            else{
+                room.getReadyList().replace(chat.getSender(), "WAITING");
+            }
+        }
+    }
+
+    public Boolean checkPwd(String roomType, String roomId, String password){
+        if(roomType.equals("normal")){
+            RoomDto room = roomRepository.getNormalRoomMap().get(roomId);
+            return room.getRoomPassword().equals(password);
+        }
+        else{
+            RoomDto room = roomRepository.getItemRoomMap().get(roomId);
+            return room.getRoomPassword().equals(password);
+        }
+    }
+
+    public List<RoomDto> findRoomList(String roomType, String lang, String tier){
+        List<RoomDto> list = new ArrayList<>();
+
+        if(roomType.equals("normal")){
+            Map<String, RoomDto> map = roomRepository.getNormalRoomMap();
+            if(lang != null){
+                map.forEach((key, value)->{
+                    if(value.getLanguage().equals(lang)){
+                        list.add(value);
+                    }
+                });
+            }
+            if(tier != null){
+                List<RoomDto> result = new ArrayList<>();
+                list.forEach((data)->{
+                    if(data.getProblemTier().equals(tier)){
+                        result.add(data);
+                    }
+                });
+                return result;
+            }
+            return list;
+        }
+        return null;
+    }
 }

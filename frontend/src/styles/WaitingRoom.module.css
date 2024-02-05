@@ -161,3 +161,13 @@ textarea{
     display: flex;
     justify-content: center;
 }
+
+.chatting_room_ready{
+    background-color: #FFAC0B;
+    color: white;
+    stroke: 2px black;
+    border: 2px solid black;
+    border-radius: 10px;
+    width: 100%;
+    height: 50px;
+}

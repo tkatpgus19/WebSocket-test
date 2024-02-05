@@ -14,12 +14,13 @@ public class RoomDto {
     private String roomPassword;
     private String problemTier;
     private int problemNo;
-    private int timeLimit;
+    private String timeLimit;
     private String language;
-    private boolean hasReview;
+    private boolean codeReview;
     private int UserCnt;
     private int maxUserCnt;
     private String master;
+    private boolean isStarted;
 
     private HashMap<String, String> userList = new HashMap<>();
     private HashMap<String, String> readyList = new HashMap<>();
@@ -27,5 +28,6 @@ public class RoomDto {
     public RoomDto() {
         this.roomId = UUID.randomUUID().toString();
         this.maxUserCnt = 6;
+        this.isStarted = false;
     }
 }

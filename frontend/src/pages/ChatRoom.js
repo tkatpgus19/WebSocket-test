@@ -16,7 +16,7 @@ function ChatRoom(){
 	const [userlist, setUserlist] = useState([]);
   const [readylist, setReadylist] = useState([]);
   const [master, setMaster] = useState('');
-	
+	const [ready, setReady] = useState(false);
 	
   // stomp 세션 연결 유지를 위한 변수
   const client = useRef();
@@ -32,14 +32,16 @@ function ChatRoom(){
   }
 	
 	const connectChat = ()=>{
-    const socket = new SockJS('http://localhost:8080/ws-stomp')
+    const socket = new SockJS('http://172.30.1.37:8080/ws-stomp')
     client.current = Stomp.over(socket)
     client.current.connect({}, onConnected, onError); 
   }
         
   function onConnected(){
     client.current.subscribe('/sub/chat/room/' + roomId, onMessageReceived);
+    client.current.subscribe('/sub/room/' + roomId + '/status', onStatusReceived);
     client.current.send("/pub/chat/enterUser", {}, JSON.stringify({type: 'ENTER', "roomId": roomId, sender: nickname, roomType: roomType}))
+    getUserList();
   }
 
   function onError(error) {
@@ -53,7 +55,13 @@ function ChatRoom(){
       var value = `${chattingWindow.value}\n[${chat.sender}]\n${chat.message}`
       chattingWindow.value = value;
       chattingWindow.scrollTop = chattingWindow.scrollHeight
-			getuserList()
+			// getUserList()
+  }
+
+  function onStatusReceived(payload){
+    // payload 받아서 레디 상태, 유저 상태 갱신
+    setUserlist(Object.keys(JSON.parse(payload.body)))
+    setReadylist(Object.values(JSON.parse(payload.body)))
   }
 
   function sendMessage(){
@@ -64,16 +72,27 @@ function ChatRoom(){
           type: 'TALK',
           roomType: roomType,
       }))
-      setMessage('')
   }
 
-	function getuserList(){
-		axios.get(`http://localhost:8080/rooms/info?roomType=${roomType}&roomId=${roomId}`)
+	function getUserList(){
+		axios.get(`http://172.30.1.37:8080/rooms/userStatus?roomType=${roomType}&roomId=${roomId}`)
       .then(res=>{
-        setUserlist(Object.values(res.data.userList))
+        setUserlist(Object.keys(res.data))
+        setReadylist(Object.values(res.data))
+        console.log('머서너 일이고...\n'+Object.keys(res.data))
       })
       .catch(err=>console.log(err))
 	}
+
+  function getReady(){
+    axios.put('http://172.30.1.37:8080/rooms/ready', {
+      "roomId": roomId,
+      sender: nickname,
+      message: 'ready',
+      type: 'TALK',
+      roomType: roomType,
+  }).then(res=>console.log('레디 성공'))
+  }
 
 	return(
 		<>
@@ -96,11 +115,11 @@ function ChatRoom(){
               {
                 [1, 2, 3, 4, 5, 6].map((data, index)=>(
                   <>
-                  <div className={style.chatting_room_profile}>
+                  <div key={userlist[index]} className={style.chatting_room_profile}>
                     <div className={style.chatting_profile_img}>.</div>
                     <div className={style.chatting_profile_info}>
                       <h3 className={style.profile_info_nickname}>{userlist[index]}</h3>
-                      <h3 className={style.profile_info_roll}>{userlist[index] === ''}</h3>
+                      <h3 className={style.profile_info_roll}>{readylist[index]}</h3>
                     </div>
                   </div>
                   </>
@@ -115,6 +134,7 @@ function ChatRoom(){
               <input className={style.chatting_chat_input} onChange={onMessageChange} onKeyDown={onKeyDown} value={message}/>
               <div className={style.chatting_chat_btn} onClick={sendMessage}>보내기</div>
             </div>
+              <div className={style.chatting_room_ready} onClick={getReady}>READY</div>
           </div>
           </div>
         </div>
