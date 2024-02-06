@@ -19,6 +19,7 @@ function ChatRoom(){
 	let location = useLocation()
 	const navigate = useNavigate();
 	const {roomId, nickname, roomType} = location.state
+  
   const [message, setMessage] = useState('');
 	const [userlist, setUserlist] = useState([]);
   const [readylist, setReadylist] = useState([]);
@@ -44,8 +45,8 @@ function ChatRoom(){
     }
   }
 	
-  const SERVER_URL = "ec2-3-39-233-234.ap-northeast-2.compute.amazonaws.com"
-  // const SERVER_URL = "localhost"
+  // const SERVER_URL = "ec2-3-39-233-234.ap-northeast-2.compute.amazonaws.com"
+  const SERVER_URL = "localhost"
 
 	const connectChat = ()=>{
     const socket = new SockJS(`http://${SERVER_URL}:8080/ws-stomp`)

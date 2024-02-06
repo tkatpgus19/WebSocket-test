@@ -32,26 +32,30 @@ public class RoomController {
     public ResponseEntity<?> makeRoom(@RequestBody RoomDto roomDto){
         log.info("roomInfo {}", roomDto);
         roomService.save(roomDto);
-        template.convertAndSend("/sub/normal/room-list", roomService.getNormalRoomList());
-        template.convertAndSend("/sub/item/room-list", roomService.getItemRoomList());
+        template.convertAndSend("/sub/normal/room-list", roomService.getNormalRoomList(null, null, 1));
+        template.convertAndSend("/sub/item/room-list", roomService.getItemRoomList(null, null, 1));
 
-        log.info("normalRoom Info: {}", roomService.getNormalRoomList());
-        log.info("itemRoom info: {}", roomService.getItemRoomList());
+        log.info("normalRoom Info: {}", roomService.getNormalRoomList(null, null, 1));
+        log.info("itemRoom info: {}", roomService.getItemRoomList(null, null, 1));
         return new ResponseEntity<>(roomDto.getRoomId(), HttpStatus.OK);
     }
 
     // 노멀전 방 리스트 조회
     @GetMapping("/normal")
-    public ResponseEntity<?> getNormalRoomList(){
-        log.warn("노말룸 정보: {}", roomService.getNormalRoomList());
-        return new ResponseEntity<>(roomService.getNormalRoomList(), HttpStatus.OK);
+    public ResponseEntity<?> getNormalRoomList(@RequestParam(value = "language", required = false) String language,
+                                               @RequestParam(value = "tier", required = false) String tier,
+                                               @RequestParam(value = "page", required = false) Integer page){
+        log.warn("노말룸 정보: {}", roomService.getNormalRoomList(language, tier, page));
+        return new ResponseEntity<>(roomService.getNormalRoomList(language, tier, page), HttpStatus.OK);
     }
 
     // 아이템전 방 리스트 조회
     @GetMapping("/item")
-    public ResponseEntity<?> getItemRoomList(){
-//        roomService.findRoomList("item", lang, tier);
-        return new ResponseEntity<>(roomService.getItemRoomList(), HttpStatus.OK);
+    public ResponseEntity<?> getItemRoomList(@RequestParam(value = "language", required = false) String language,
+                                             @RequestParam(value = "tier", required = false) String tier,
+                                             @RequestParam(value = "page", required = false) Integer page){
+        log.warn("아이템 정보: {}", roomService.getItemRoomList(language, tier, page));
+        return new ResponseEntity<>(roomService.getItemRoomList(language, tier, page), HttpStatus.OK);
     }
 
     // 게임방 정보 조회
@@ -89,8 +93,8 @@ public class RoomController {
                     .build();
 
             template.convertAndSend("/sub/chat/room/" + roomId, chat);
-            template.convertAndSend("/sub/normal/room-list", roomService.getNormalRoomList());
-            template.convertAndSend("/sub/item/room-list", roomService.getItemRoomList());
+            template.convertAndSend("/sub/normal/room-list", roomService.getNormalRoomList(null, null, 1));
+            template.convertAndSend("/sub/item/room-list", roomService.getItemRoomList(null, null, 1));
             if(roomService.getUserStatus(roomType, roomId) != null) {
                 template.convertAndSend("/sub/room/" + roomId + "/status", roomService.getUserStatus(roomType, roomId));
             }
@@ -111,8 +115,8 @@ public class RoomController {
         template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
         template.convertAndSend("/sub/room/"+chat.getRoomId()+"/status", roomService.getUserStatus(chat.getRoomType(), chat.getRoomId()));
 
-        template.convertAndSend("/sub/normal/room-list", roomService.getNormalRoomList());
-        template.convertAndSend("/sub/item/room-list", roomService.getItemRoomList());
+        template.convertAndSend("/sub/normal/room-list", roomService.getNormalRoomList(null, null, 1));
+        template.convertAndSend("/sub/item/room-list", roomService.getItemRoomList(null, null, 1));
     }
 
     // 게임에 참여한 유저 리스트 및 상태 반환
@@ -137,9 +141,11 @@ public class RoomController {
         template.convertAndSend("/sub/chat/all", chat);
     }
 
+    // 게임 준비
     @PutMapping("/ready")
     public void ready(@RequestBody ChatDto chat){
         roomService.ready(chat);
         template.convertAndSend("/sub/room/"+chat.getRoomId()+"/status", roomService.getUserStatus(chat.getRoomType(), chat.getRoomId()));
     }
+
 }

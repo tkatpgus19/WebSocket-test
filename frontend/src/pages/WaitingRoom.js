@@ -7,16 +7,20 @@ import { useNavigate } from 'react-router-dom';
 function WaitingRoom(){
   useEffect(()=>{
 
-    // 서버로 방목록 조회 api 요청(기본이 노멀전 조회)
-    axios.get(`http://${SERVER_URL}:8080/rooms/normal`)
-    .then(res=>setRoomList(res.data))
+    getRoomList();
 
     // 방이 실시간으로 바뀌는 것을 인지하기 위해 항상 해당 채널을 구독해야한다.
     connectSession();
   }, [])
 
-  const SERVER_URL = "ec2-3-39-233-234.ap-northeast-2.compute.amazonaws.com"
-  // const SERVER_URL = "localhost"
+  const getRoomList = ()=>{
+    // 서버로 방목록 조회 api 요청(기본이 노멀전 조회)
+    axios.get(`http://${SERVER_URL}:8080/rooms/normal?page=${pageNo}`)
+    .then(res=>setRoomList(res.data))
+  }
+
+  // const SERVER_URL = "ec2-3-39-233-234.ap-northeast-2.compute.amazonaws.com"
+  const SERVER_URL = "localhost"
 
   const client = useRef();
   let rt = 'normal';
@@ -88,7 +92,6 @@ function WaitingRoom(){
     })
     .then(res=>{
       // 방 생성에 성공하면 대기방 화면으로 이동
-    
         navigate("/chat", {state: {roomId:res.data, nickname: nickname, roomType: roomType}})
       
     })
@@ -134,6 +137,7 @@ function WaitingRoom(){
 
   const [textarea2, setTextarea] = useState('');
   const [nowRoomType, setNowRoomType] = useState('normal')
+  const [pageNo, setPageNo] = useState(1);
 
   const [chat, setChat] = useState('');
 
@@ -262,7 +266,17 @@ function WaitingRoom(){
           setRoomPassword(''); 
           setIsLocked(false); 
           makeRoom();}}>방 만들기</button>
-
+        
+      </div>
+      <div>
+      <button onClick={()=>{
+        setPageNo(pageNo-1); 
+        client.current.disconnect(); 
+        getRoomList(); 
+        connectSession();
+        }}>왼쪽</button>
+        {pageNo}
+        <button onClick={()=>{setPageNo(pageNo+1); getRoomList()}}>오른쪽</button>
       </div>
 
       <textarea className='chat2' style={{height: '500px', color:'black'}} value={textarea2}></textarea>
