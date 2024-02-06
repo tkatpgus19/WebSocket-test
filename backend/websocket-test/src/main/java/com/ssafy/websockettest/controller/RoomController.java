@@ -1,6 +1,7 @@
 package com.ssafy.websockettest.controller;
 
 import com.ssafy.websockettest.model.ChatDto;
+import com.ssafy.websockettest.model.ItemDto;
 import com.ssafy.websockettest.model.RoomDto;
 import com.ssafy.websockettest.repository.RoomRepository;
 import com.ssafy.websockettest.repository.RoomService;
@@ -148,4 +149,28 @@ public class RoomController {
         template.convertAndSend("/sub/room/"+chat.getRoomId()+"/status", roomService.getUserStatus(chat.getRoomType(), chat.getRoomId()));
     }
 
+    // 채팅방 비밀번호 비교
+    // 넘어오는 roomPwd 를 비교하고 일치하는지 체크 후 boolean 값을 반환한다.
+    @PostMapping("/checkPwd")
+    public ResponseEntity<?> confirmPwd(@RequestParam("roomType") String roomType, @RequestParam("roomId") String roomId, @RequestParam("roomPwd") String roomPwd){
+        return new ResponseEntity<>(roomService.checkPwd(roomType, roomId, roomPwd), HttpStatus.OK);
+    }
+
+    // 인원 수 체크
+    @GetMapping("/personnel/check")
+    public ResponseEntity<?> checkPersonnel(@RequestParam("roomType") String roomType, @RequestParam("roomId") String roomId){
+        return new ResponseEntity<>(roomService.checkPersonnel(roomType, roomId), HttpStatus.OK);
+    }
+
+    // 게임 시작
+    @GetMapping("/start")
+    public ResponseEntity<?> start(@RequestParam("roomType") String roomType, @RequestParam("roomId") String roomId){
+        return new ResponseEntity<>(roomService.checkReady(roomType, roomId), HttpStatus.OK);
+    }
+
+    @MessageMapping("/item/use")
+    public void sendMessage(@Payload ItemDto itemDto) {
+        log.info("공격 상황 : " + itemDto);
+        template.convertAndSend("/sub/game/" + itemDto.getRoomId(), itemDto);
+    }
 }
