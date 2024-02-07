@@ -7,6 +7,8 @@ import style from '../styles/WaitingRoom.module.css'
 
 function ChatRoom(){
 	useEffect(()=>{
+    axios.get(`http://${SERVER_URL}/rooms/set-timer?roomId=${roomId}`)
+        .then(res=>console.log(res))
 		connectChat();
     (() => {
       window.addEventListener("beforeunload", preventClose);    
@@ -16,15 +18,17 @@ function ChatRoom(){
         window.removeEventListener("beforeunload", preventClose);
   };
 	}, [])
-	let location = useLocation()
 	const navigate = useNavigate();
+
+
+	let location = useLocation()
 	const {roomId, nickname, roomType} = location.state
-  
+
+
   const [message, setMessage] = useState('');
 	const [userlist, setUserlist] = useState([]);
   const [readylist, setReadylist] = useState([]);
-  const [master, setMaster] = useState('');
-	const [ready, setReady] = useState(false);
+  const [timer, setTimer] = useState(0);
 	
 
   // 새로고침 막기 변수
@@ -46,10 +50,10 @@ function ChatRoom(){
   }
 	
   // const SERVER_URL = "ec2-3-39-233-234.ap-northeast-2.compute.amazonaws.com"
-  const SERVER_URL = "localhost"
+  const SERVER_URL = process.env.REACT_APP_API_URL
 
 	const connectChat = ()=>{
-    const socket = new SockJS(`http://${SERVER_URL}:8080/ws-stomp`)
+    const socket = new SockJS(`http://${SERVER_URL}/ws-stomp`)
     client.current = Stomp.over(socket)
     client.current.connect({}, onConnected, onError); 
   }
@@ -58,11 +62,15 @@ function ChatRoom(){
     client.current.subscribe('/sub/chat/room/' + roomId, onMessageReceived);
     client.current.subscribe('/sub/room/' + roomId + '/status', onStatusReceived);
     client.current.send("/pub/chat/enterUser", {}, JSON.stringify({type: 'ENTER', "roomId": roomId, sender: nickname, roomType: roomType}))
+    client.current.subscribe(`/sub/timer/`+roomId, onTimerReceived);
     getUserList();
   }
 
   function onError(error) {
       alert('error')
+  }
+  function onTimerReceived(payload){
+    setTimer(JSON.parse(payload.body));
   }
 
   function onMessageReceived(payload) {
@@ -92,7 +100,7 @@ function ChatRoom(){
   }
 
 	function getUserList(){
-		axios.get(`http://${SERVER_URL}:8080/rooms/userStatus?roomType=${roomType}&roomId=${roomId}`)
+		axios.get(`http://${SERVER_URL}/rooms/userStatus?roomType=${roomType}&roomId=${roomId}`)
       .then(res=>{
         setUserlist(Object.keys(res.data))
         setReadylist(Object.values(res.data))
@@ -102,7 +110,7 @@ function ChatRoom(){
 	}
 
   function getReady(){
-    axios.put(`http://${SERVER_URL}:8080/rooms/ready`, {
+    axios.put(`http://${SERVER_URL}/rooms/ready`, {
       "roomId": roomId,
       sender: nickname,
       message: 'ready',
@@ -113,6 +121,7 @@ function ChatRoom(){
 
 	return(
 		<>
+    {timer}
         <div className={style.chatting_container}>
           <div className={style.chatting_title + ' ' + style.chatting_common_box}>
             <h3>1. 채팅 앱</h3>

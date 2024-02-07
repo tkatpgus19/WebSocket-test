@@ -128,8 +128,13 @@ public class RoomService {
                 room.setUserCnt(room.getUserCnt() - 1);
                 String user = room.getUserList().get(userUUID);
 
+                if(room.getReadyList().get(user).equals("MASTER") && room.getUserCnt() != 0){
+                    room.getReadyList().remove(user);
+                    Map.Entry<String, String> firstEntry = room.getReadyList().entrySet().iterator().next();
+                    room.getReadyList().replace(firstEntry.getKey(), "MASTER");
+                    room.setMaster(firstEntry.getKey());
+                }
                 room.getUserList().remove(userUUID);
-                room.getReadyList().remove(user);
 
                 if (room.getUserCnt() == 0) {
                     roomRepository.getNormalRoomMap().remove(roomId);
@@ -238,7 +243,7 @@ public class RoomService {
         }
     }
 
-    public Boolean checkReady(String roomType, String roomId){
+    public RoomDto checkReady(String roomType, String roomId){
         int cnt = 0;
         if(roomType.equals("normal")){
             RoomDto room = roomRepository.getNormalRoomMap().get(roomId);
@@ -252,7 +257,11 @@ public class RoomService {
                     cnt++;
                 }
             }
-            return cnt == room.getUserCnt() - 1;
+            if(cnt == room.getUserCnt()-1){
+                room.setStarted(true);
+                return room;
+            }
+            return null;
 
         }
         else{
@@ -267,7 +276,10 @@ public class RoomService {
                     cnt++;
                 }
             }
-            return cnt == room.getUserCnt() - 1;
+            if(cnt == room.getUserCnt()-1){
+                return room;
+            }
+            return null;
         }
     }
 }

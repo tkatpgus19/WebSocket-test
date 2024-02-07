@@ -65,6 +65,7 @@ public class RoomController {
         return new ResponseEntity<>(roomService.getRoomInfo(roomType, roomId), HttpStatus.OK);
     }
 
+
     // 유저 퇴장 시에는 EventListener 을 통해서 유저 퇴장을 확인
     @EventListener
     public void webSocketDisconnectListener(SessionDisconnectEvent event) {
@@ -165,7 +166,12 @@ public class RoomController {
     // 게임 시작
     @GetMapping("/start")
     public ResponseEntity<?> start(@RequestParam("roomType") String roomType, @RequestParam("roomId") String roomId){
-        return new ResponseEntity<>(roomService.checkReady(roomType, roomId), HttpStatus.OK);
+        RoomDto result = roomService.checkReady(roomType, roomId);
+        if(result == null){
+            return new ResponseEntity<>(false, HttpStatus.OK);
+        }
+        template.convertAndSend("/sub/room/"+roomId+"/start", result);
+        return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
     @MessageMapping("/item/use")
@@ -173,4 +179,20 @@ public class RoomController {
         log.info("공격 상황 : " + itemDto);
         template.convertAndSend("/sub/game/" + itemDto.getRoomId(), itemDto);
     }
+
+    @GetMapping("/set-timer")
+    public void startTimer(@RequestParam("roomId") String roomId){
+        long timerValue;
+        for (int i = 10; i >= 0; i--) {
+            timerValue = i;
+            template.convertAndSend("/sub/timer/"+roomId, timerValue);
+            log.warn("초: " + timerValue);
+            try {
+                Thread.sleep(1000); // 1초 대기
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }
