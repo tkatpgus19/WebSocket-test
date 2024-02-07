@@ -70,17 +70,17 @@ public class RoomService {
                     .filter(entry -> entry.getProblemTier().equals(tier))
                     .toList();
         }
-//        if(resultList.size() > (page-1)*4){
-//            if(resultList.size()<(page-1)*4+4){
-//                resultList = resultList.subList((page-1)*4, resultList.size());
-//            }
-//            else{
-//                resultList = resultList.subList((page-1)*4, (page-1)*4+4);
-//            }
-//        }
-//        else{
-//            return Collections.emptyList();
-//        }
+        if(resultList.size() > (page-1)*4){
+            if(resultList.size()<(page-1)*4+4){
+                resultList = resultList.subList((page-1)*4, resultList.size());
+            }
+            else{
+                resultList = resultList.subList((page-1)*4, (page-1)*4+4);
+            }
+        }
+        else{
+            return Collections.emptyList();
+        }
         return resultList;
     }
 
@@ -134,6 +134,9 @@ public class RoomService {
                     room.getReadyList().replace(firstEntry.getKey(), "MASTER");
                     room.setMaster(firstEntry.getKey());
                 }
+                else{
+                    room.getReadyList().remove(user);
+                }
                 room.getUserList().remove(userUUID);
 
                 if (room.getUserCnt() == 0) {
@@ -144,8 +147,16 @@ public class RoomService {
                 room.setUserCnt(room.getUserCnt() - 1);
                 String user = room.getUserList().get(userUUID);
 
+                if(room.getReadyList().get(user).equals("MASTER") && room.getUserCnt() != 0){
+                    room.getReadyList().remove(user);
+                    Map.Entry<String, String> firstEntry = room.getReadyList().entrySet().iterator().next();
+                    room.getReadyList().replace(firstEntry.getKey(), "MASTER");
+                    room.setMaster(firstEntry.getKey());
+                }
+                else{
+                    room.getReadyList().remove(user);
+                }
                 room.getUserList().remove(userUUID);
-                room.getReadyList().remove(user);
 
                 if (room.getUserCnt() == 0) {
                     roomRepository.getItemRoomMap().remove(roomId);
@@ -277,6 +288,7 @@ public class RoomService {
                 }
             }
             if(cnt == room.getUserCnt()-1){
+                room.setStarted(true);
                 return room;
             }
             return null;

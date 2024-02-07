@@ -71,11 +71,6 @@ function WaitingRoom(){
   // 게임방 생성 함수
   // 생성 후 방으로 이동한다.
   function makeRoom(){
-
-    if(nickname === '닉네임1'){
-      alert('닉네임을 바꿔주세요')
-    }
-    else{
     // 방 생성 api 호출
     axios.post(`${SERVER_URL}/rooms`, {
       roomType: roomType,
@@ -94,7 +89,6 @@ function WaitingRoom(){
         navigate("/chat", {state: {roomId:res.data, nickname: nickname, roomType: roomType}})
       
     })
-  }
   }
 
 
@@ -123,7 +117,7 @@ function WaitingRoom(){
   const [roomList, setRoomList] = useState([]);
 
   const [roomName, setRoomName] = useState('');
-  const [nickname, setNickname] = useState('닉네임1');
+  const [nickname, setNickname] = useState('닉네임'+Math.floor(Math.random()*100));
   const [isLocked, setIsLocked] = useState(false);
   const [roomPassword, setRoomPassword] = useState('');
   const [maxUserCnt, setMaxUserCnt] = useState(2);

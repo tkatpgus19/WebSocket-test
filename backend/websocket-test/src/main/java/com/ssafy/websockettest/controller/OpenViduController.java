@@ -1,12 +1,12 @@
 package com.ssafy.websockettest.controller;
 
 import io.openvidu.java.client.*;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.PostConstruct;
 import java.util.Map;
 
 @CrossOrigin(origins = "*")

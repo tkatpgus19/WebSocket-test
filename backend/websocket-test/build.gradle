@@ -24,19 +24,14 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	implementation 'org.webjars:stomp-websocket:2.3.4'
 
-	/* Kurento 미디어 서버 관련 2개 */
-	// https://mvnrepository.com/artifact/org.kurento/kurento-client
-	implementation group: 'org.kurento', name: 'kurento-client', version: '6.18.0'
-
-	// https://mvnrepository.com/artifact/org.kurento/kurento-utils-js
-	implementation group: 'org.kurento', name: 'kurento-utils-js', version: '6.18.0'
-// https://mvnrepository.com/artifact/io.openvidu/openvidu-java-client
-	implementation group: 'io.openvidu', name: 'openvidu-java-client', version: '2.29.0'
+	// OpenVidu
+	implementation 'io.openvidu:openvidu-java-client:2.29.0'
 
 
 }

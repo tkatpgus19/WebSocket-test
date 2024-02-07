@@ -1,12 +1,12 @@
 package com.ssafy.websockettest.common.exception;
 
-import com.eni.backend.common.response.BaseErrorResponse;
+import com.ssafy.websockettest.common.response.BaseErrorResponse;
 import jakarta.annotation.Priority;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
-import org.hibernate.TypeMismatchException;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-import static com.eni.backend.common.response.BaseResponseStatus.*;
+import static com.ssafy.websockettest.common.response.BaseResponseStatus.*;
 
 @Slf4j
 @EnableWebMvc

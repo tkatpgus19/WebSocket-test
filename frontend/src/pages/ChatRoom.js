@@ -7,8 +7,8 @@ import style from '../styles/WaitingRoom.module.css'
 
 function ChatRoom(){
 	useEffect(()=>{
-    axios.get(`${SERVER_URL}/rooms/set-timer?roomId=${roomId}`)
-        .then(res=>console.log(res))
+    // axios.get(`${SERVER_URL}/rooms/set-timer?roomId=${roomId}`)
+    //     .then(res=>console.log(res))
 		connectChat();
     (() => {
       window.addEventListener("beforeunload", preventClose);    

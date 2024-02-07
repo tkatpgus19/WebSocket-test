@@ -1,6 +1,6 @@
 package com.ssafy.websockettest.common.exception;
 
-import com.eni.backend.common.response.BaseResponseStatus;
+import com.ssafy.websockettest.common.response.BaseResponseStatus;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
