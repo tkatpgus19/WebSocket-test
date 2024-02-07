@@ -12,10 +12,9 @@ function WaitingRoom(){
     // 방이 실시간으로 바뀌는 것을 인지하기 위해 항상 해당 채널을 구독해야한다.
     connectSession();
   }, [])
-
   const getRoomList = ()=>{
     // 서버로 방목록 조회 api 요청(기본이 노멀전 조회)
-    axios.get(`http://${SERVER_URL}/rooms/normal?page=${pageNo}`)
+    axios.get(`${SERVER_URL}/rooms/normal?page=${pageNo}`)
     .then(res=>setRoomList(res.data))
   }
 
@@ -27,7 +26,7 @@ function WaitingRoom(){
 
   // 세션 연결
   const connectSession = ()=>{
-    const socket = new SockJS(`http://${SERVER_URL}/ws-stomp`)
+    const socket = new SockJS(`${SERVER_URL}/ws-stomp`)
     client.current = Stomp.over(socket)
     client.current.connect({}, onConnected, onError); 
   }
@@ -78,7 +77,7 @@ function WaitingRoom(){
     }
     else{
     // 방 생성 api 호출
-    axios.post(`http://${SERVER_URL}/rooms`, {
+    axios.post(`${SERVER_URL}/rooms`, {
       roomType: roomType,
       roomName: roomName,
       hasPassword: isLocked,
@@ -107,7 +106,7 @@ function WaitingRoom(){
     rt = roomType;
 
     // 방 목록 다시 조회
-    axios.get(`http://${SERVER_URL}/rooms/${roomType}`)
+    axios.get(`${SERVER_URL}/rooms/${roomType}`)
       .then(res=>{
         setRoomList(res.data); 
         connectSession()})
@@ -127,6 +126,7 @@ function WaitingRoom(){
   const [nickname, setNickname] = useState('닉네임1');
   const [isLocked, setIsLocked] = useState(false);
   const [roomPassword, setRoomPassword] = useState('');
+  const [maxUserCnt, setMaxUserCnt] = useState(2);
   const [roomType, setRoomType] = useState('normal');
   const [problemTier, setProblemTier] = useState('골드1');
   const [problemNo, setProblemNo] = useState(1001);
@@ -197,6 +197,7 @@ function WaitingRoom(){
             }
             {
               roomList.map((data, index)=>{
+                console.log(data)
               return(
                 <>
                 <tr>
@@ -210,10 +211,10 @@ function WaitingRoom(){
                     onClick={()=>{
                       if(data.hasPassword){                      
                         const passwd = prompt("비밀번호")
-                        axios.post(`http://${SERVER_URL}/rooms/checkPwd?roomType=${data.roomType}&roomId=${data.roomId}&roomPwd=${passwd}`)
+                        axios.post(`${SERVER_URL}/rooms/checkPwd?roomType=${data.roomType}&roomId=${data.roomId}&roomPwd=${passwd}`)
                           .then(res=>{
                             if(res.data){
-                              checkMaxCnt() ? navigate("/chat", {state: {roomId:data.roomId, nickname: nickname, roomType: nowRoomType}}) : alert('방 인원 가득 참')
+                                    checkMaxCnt() ? navigate("/chat", {state: {roomId:data.roomId, nickname: nickname, roomType: nowRoomType}}) : alert('방 인원 가득 참')
                             }
                             else{
                               alert('비밀번호가 다름')

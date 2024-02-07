@@ -1,4 +1,4 @@
-package com.ssafy.websockettest.config;
+package com.ssafy.websockettest.common.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;

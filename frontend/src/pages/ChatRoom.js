@@ -7,7 +7,7 @@ import style from '../styles/WaitingRoom.module.css'
 
 function ChatRoom(){
 	useEffect(()=>{
-    axios.get(`http://${SERVER_URL}/rooms/set-timer?roomId=${roomId}`)
+    axios.get(`${SERVER_URL}/rooms/set-timer?roomId=${roomId}`)
         .then(res=>console.log(res))
 		connectChat();
     (() => {
@@ -53,7 +53,7 @@ function ChatRoom(){
   const SERVER_URL = process.env.REACT_APP_API_URL
 
 	const connectChat = ()=>{
-    const socket = new SockJS(`http://${SERVER_URL}/ws-stomp`)
+    const socket = new SockJS(`${SERVER_URL}/ws-stomp`)
     client.current = Stomp.over(socket)
     client.current.connect({}, onConnected, onError); 
   }
@@ -100,7 +100,7 @@ function ChatRoom(){
   }
 
 	function getUserList(){
-		axios.get(`http://${SERVER_URL}/rooms/userStatus?roomType=${roomType}&roomId=${roomId}`)
+		axios.get(`${SERVER_URL}/rooms/userStatus?roomType=${roomType}&roomId=${roomId}`)
       .then(res=>{
         setUserlist(Object.keys(res.data))
         setReadylist(Object.values(res.data))
@@ -110,7 +110,7 @@ function ChatRoom(){
 	}
 
   function getReady(){
-    axios.put(`http://${SERVER_URL}/rooms/ready`, {
+    axios.put(`${SERVER_URL}/rooms/ready`, {
       "roomId": roomId,
       sender: nickname,
       message: 'ready',
