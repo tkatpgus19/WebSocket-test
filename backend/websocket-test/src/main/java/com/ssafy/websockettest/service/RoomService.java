@@ -1,13 +1,16 @@
-package com.ssafy.websockettest.repository;
+package com.ssafy.websockettest.service;
 
+import com.ssafy.websockettest.dto.request.PostRoomRequest;
+import com.ssafy.websockettest.dto.response.PostRoomResponse;
 import com.ssafy.websockettest.model.ChatDto;
 import com.ssafy.websockettest.model.RoomDto;
+import com.ssafy.websockettest.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -15,20 +18,28 @@ import java.util.stream.Collectors;
 public class RoomService {
 
     private final RoomRepository roomRepository;
-    
+    private final SimpMessageSendingOperations template;
+
     // 방 등록
-    public void save(RoomDto roomDto){
-        if(roomDto.getRoomType().equals("normal")){
-            roomRepository.getNormalRoomMap().put(roomDto.getRoomId(), roomDto);
-        }
-        else{
-            roomRepository.getItemRoomMap().put(roomDto.getRoomId(), roomDto);
-        }
+    public PostRoomResponse post(PostRoomRequest request){
+        String roomId = roomRepository.save(request);
+
+        template.convertAndSend("/sub/normal/room-list", getRoomList("normal",null, null, null, false, 1));
+        template.convertAndSend("/sub/item/room-list", getRoomList("item",null, null, null, false, 1));
+
+        // 생성된 방 ID 값 반환
+        return PostRoomResponse.of(roomId);
     }
 
     // 노말전 방 리스트 조회
-    public List<RoomDto> getNormalRoomList(String language, String tier, Integer page){
-        List<RoomDto> resultList = roomRepository.getNormalRoomMap().values().stream().toList();
+    public List<RoomDto> getRoomList(String roomType, String language, String tier, Boolean codeReview, Boolean isSolved, Integer page){
+        List<RoomDto> resultList;
+        if(roomType.equals("normal")){
+            resultList = roomRepository.getNormalRoomMap().values().stream().toList();
+        }
+        else{
+            resultList = roomRepository.getItemRoomMap().values().stream().toList();
+        }
         if(language != null){
             resultList = resultList
                     .stream()
@@ -39,6 +50,12 @@ public class RoomService {
             resultList = resultList
                     .stream()
                     .filter(entry -> entry.getProblemTier().equals(tier))
+                    .toList();
+        }
+        if(codeReview != null){
+            resultList = resultList
+                    .stream()
+                    .filter(entry -> entry.getCodeReview() == codeReview)
                     .toList();
         }
         if(resultList.size() > (page-1)*4){
@@ -269,7 +286,7 @@ public class RoomService {
                 }
             }
             if(cnt == room.getUserCnt()-1){
-                room.setStarted(true);
+                room.setIsStarted(true);
                 return room;
             }
             return null;
@@ -288,7 +305,7 @@ public class RoomService {
                 }
             }
             if(cnt == room.getUserCnt()-1){
-                room.setStarted(true);
+                room.setIsStarted(true);
                 return room;
             }
             return null;

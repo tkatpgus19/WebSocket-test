@@ -15,7 +15,7 @@ function WaitingRoom(){
   const getRoomList = ()=>{
     // 서버로 방목록 조회 api 요청(기본이 노멀전 조회)
     axios.get(`${SERVER_URL}/rooms/normal?page=${pageNo}`)
-    .then(res=>setRoomList(res.data))
+    .then(res=>setRoomList(res.data.result))
   }
 
   // const SERVER_URL = "ec2-3-39-233-234.ap-northeast-2.compute.amazonaws.com"
@@ -81,13 +81,17 @@ function WaitingRoom(){
       problemNo: problemNo,
       timeLimit: timeLimit,
       language: language,
-      hasReview: hasReview,
+      codeReview: hasReview,
       master: nickname
     })
     .then(res=>{
       // 방 생성에 성공하면 대기방 화면으로 이동
-        navigate("/chat", {state: {roomId:res.data, nickname: nickname, roomType: roomType}})
+        navigate("/chat", {state: {roomId:res.data.result.roomId, nickname: nickname, roomType: roomType}})
+        console.log(res)
       
+    })
+    .catch(err=>{
+      console.log(err)
     })
   }
 
@@ -150,7 +154,7 @@ function WaitingRoom(){
     setLanguate(e.target.value)
   }
   const onHasReviewChange = (e)=>{
-    setHasReview(e.target.value)
+    setHasReview(!hasReview)
   }
 
   const navigate = useNavigate();
@@ -246,7 +250,7 @@ function WaitingRoom(){
         }<br/>
       <p style={{margin:'0'}}>문제 티어</p><input placeholder='문제 티어' onChange={onProblemTierChange} value={problemTier}/>
       <p style={{margin:'0'}}>문제 번호</p><input type='number' placeholder='문제 번호' onChange={onProblemNoChange} value={problemNo}/>
-      <p style={{margin:'0'}}>시간 제한</p><input type='number' placeholder='시간 제한' onChange={onTimeLimitChange} value={timeLimit}/>
+      <p style={{margin:'0'}}>시간 제한</p><input placeholder='시간 제한' onChange={onTimeLimitChange} value={timeLimit}/>
       <p style={{margin:'0'}}>풀이 언어</p><input placeholder='풀이 언어' onChange={onLanguageChange} value={language}/>
       <p style={{margin:'0'}}>리뷰 여부</p><input type='checkbox' onChange={onHasReviewChange} value={hasReview}/><br/>
 

@@ -1,10 +1,13 @@
 package com.ssafy.websockettest.controller;
 
+import com.ssafy.websockettest.common.exception.CustomBadRequestException;
+import com.ssafy.websockettest.common.response.BaseSuccessResponse;
+import com.ssafy.websockettest.dto.request.PostRoomRequest;
 import com.ssafy.websockettest.model.ChatDto;
 import com.ssafy.websockettest.model.ItemDto;
 import com.ssafy.websockettest.model.RoomDto;
-import com.ssafy.websockettest.repository.RoomRepository;
-import com.ssafy.websockettest.repository.RoomService;
+import com.ssafy.websockettest.service.RoomService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -15,10 +18,16 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
+import static com.ssafy.websockettest.common.response.BaseResponseStatus.*;
+import static com.ssafy.websockettest.common.util.BindingResultUtils.getErrorMessages;
+
 @Slf4j
+@Validated
 @RestController
 @RequiredArgsConstructor
 @CrossOrigin("*")
@@ -30,24 +39,26 @@ public class RoomController {
 
     // 방 등록
     @PostMapping("")
-    public ResponseEntity<?> makeRoom(@RequestBody RoomDto roomDto){
-        log.info("roomInfo {}", roomDto);
-        roomService.save(roomDto);
-        template.convertAndSend("/sub/normal/room-list", roomService.getNormalRoomList(null, null, 1));
-        template.convertAndSend("/sub/item/room-list", roomService.getItemRoomList(null, null, 1));
+    public BaseSuccessResponse<?> post(@RequestBody @Valid PostRoomRequest request, BindingResult bindingResult){
+        log.info("RoomController.post\nRoomInfo: {}" ,request);
 
-        log.info("normalRoom Info: {}", roomService.getNormalRoomList(null, null, 1));
-        log.info("itemRoom info: {}", roomService.getItemRoomList(null, null, 1));
-        return new ResponseEntity<>(roomDto.getRoomId(), HttpStatus.OK);
+        // validation 오류
+        if(bindingResult.hasErrors()){
+            throw new CustomBadRequestException(BAD_REQUEST, getErrorMessages(bindingResult));
+        }
+
+        return BaseSuccessResponse.of(POST_ROOM_SUCCESS, roomService.post(request));
     }
 
     // 노멀전 방 리스트 조회
     @GetMapping("/normal")
-    public ResponseEntity<?> getNormalRoomList(@RequestParam(value = "language", required = false) String language,
+    public BaseSuccessResponse<?> getNormalRoomList(@RequestParam(value = "language", required = false) String language,
                                                @RequestParam(value = "tier", required = false) String tier,
+                                               @RequestParam(value = "has-review", required = false) Boolean codeReview,
+                                               @RequestParam(value = "is-solved", required = false) Boolean isSolved,
                                                @RequestParam(value = "page", required = false) Integer page){
-        log.warn("노말룸 정보: {}", roomService.getNormalRoomList(language, tier, page));
-        return new ResponseEntity<>(roomService.getNormalRoomList(language, tier, page), HttpStatus.OK);
+        log.warn("노말룸 정보: {}", roomService.getRoomList("normal", language, tier, codeReview, isSolved, page));
+        return BaseSuccessResponse.of(GET_ROOM_LIST_SUCCESS, roomService.getRoomList("normal", language, tier, codeReview, isSolved, page));
     }
 
     // 아이템전 방 리스트 조회
@@ -95,7 +106,7 @@ public class RoomController {
                     .build();
 
             template.convertAndSend("/sub/chat/room/" + roomId, chat);
-            template.convertAndSend("/sub/normal/room-list", roomService.getNormalRoomList(null, null, 1));
+            template.convertAndSend("/sub/normal/room-list", roomService.getRoomList("normal",null, null, null, false, 1));
             template.convertAndSend("/sub/item/room-list", roomService.getItemRoomList(null, null, 1));
             if(roomService.getUserStatus(roomType, roomId) != null) {
                 template.convertAndSend("/sub/room/" + roomId + "/status", roomService.getUserStatus(roomType, roomId));
@@ -117,7 +128,7 @@ public class RoomController {
         template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
         template.convertAndSend("/sub/room/"+chat.getRoomId()+"/status", roomService.getUserStatus(chat.getRoomType(), chat.getRoomId()));
 
-        template.convertAndSend("/sub/normal/room-list", roomService.getNormalRoomList(null, null, 1));
+        template.convertAndSend("/sub/normal/room-list", roomService.getRoomList("normal",null, null, null, false, 1));
         template.convertAndSend("/sub/item/room-list", roomService.getItemRoomList(null, null, 1));
     }
 
