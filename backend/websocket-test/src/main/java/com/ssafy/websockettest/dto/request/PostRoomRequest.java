@@ -27,11 +27,11 @@ public class PostRoomRequest {
     @NotBlank(message = "문제 난이도를 입력해주세요.")
     private String problemTier;
 
-    @NotNull(message = "문제 번호를 입력해주세요.")
-    private Long problemNo;
+    @NotBlank(message = "문제 정보를 입력해주세요.")
+    private String problemName;
 
-    @NotBlank(message = "제한 시간을 입력해주세요.")
-    private String timeLimit;
+    @NotNull(message = "제한 시간을 입력해주세요.")
+    private Long timeLimit;
 
     @NotBlank(message = "풀이 언어를 입력해주세요.")
     private String language;

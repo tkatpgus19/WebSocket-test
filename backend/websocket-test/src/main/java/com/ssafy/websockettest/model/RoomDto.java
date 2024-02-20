@@ -1,11 +1,8 @@
 package com.ssafy.websockettest.model;
 
-import com.ssafy.websockettest.dto.request.PostRoomRequest;
-import com.ssafy.websockettest.dto.response.PostRoomResponse;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.UUID;
 
@@ -17,8 +14,8 @@ public class RoomDto {
     private Boolean hasPassword;
     private String roomPassword;
     private String problemTier;
-    private Long problemNo;
-    private String timeLimit;
+    private String problemName;
+    private Long timeLimit;
     private String language;
     private Boolean codeReview;
     private Integer userCnt;
@@ -31,7 +28,7 @@ public class RoomDto {
 
     @Builder
     public RoomDto(String roomId, String roomType, String roomName, Boolean hasPassword,
-                   String roomPassword, String problemTier, Long problemNo, String timeLimit,
+                   String roomPassword, String problemTier, String problemName, Long timeLimit,
                    String language, Boolean codeReview, Integer maxUserCnt,
                    String master, Boolean isStarted) {
         this.roomId = roomId != null ? roomId : UUID.randomUUID().toString();
@@ -40,7 +37,7 @@ public class RoomDto {
         this.hasPassword = hasPassword;
         this.roomPassword = roomPassword;
         this.problemTier = problemTier;
-        this.problemNo = problemNo;
+        this.problemName = problemName;
         this.timeLimit = timeLimit;
         this.language = language;
         this.codeReview = codeReview;
